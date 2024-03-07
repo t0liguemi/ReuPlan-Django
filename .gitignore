@@ -1,0 +1,5 @@
+ReuPlan_Django/.env
+api/__pycache__
+api/migrations
+ReuPlan_Django/__pycache__
+db.sqlite3
