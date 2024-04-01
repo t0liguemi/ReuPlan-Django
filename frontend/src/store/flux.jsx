@@ -68,7 +68,6 @@ const getState = ({ getStore, getActions, setStore }) => {
           }
         })
         .catch((error) => {
-          console.error("An error occurred during session retrieval:", error);
         });
       },
       findPending: () => {
@@ -972,7 +971,6 @@ const getState = ({ getStore, getActions, setStore }) => {
           return [fecha, [block.inicio, block.final], block.id];
         });
         setStore({ bloquesUsuarioActual: userBlocksDeletable });
-        console.log("store desde blocks", getStore());
       },
       meetingResultsToDate: () => {
         //Transforma las fechas resultantes en arreglos separados [Date,horario]

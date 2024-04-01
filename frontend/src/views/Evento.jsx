@@ -21,19 +21,9 @@ const Evento = (props) => {
     day: "numeric",
     timeZone: "Chile/Continental",
   };
-  const [anchorEl, setAnchorEl] = React.useState(null);
-
-  const handlePopoverOpen = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handlePopoverClose = () => {
-    setAnchorEl(null);
-  };
-
-  const open = Boolean(anchorEl);
 
   useEffect(() => {
+    store.eventReady = false;
     localStorage.setItem("reuPlanCurrentEvent", eventID);
     fetch("http://localhost:8000/api/auth", {
       method: "GET",

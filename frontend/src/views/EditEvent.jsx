@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext } from "react";
 import { Context } from "../store/context";
-import { Navigate } from "react-router";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import "./editEvent.css";
 

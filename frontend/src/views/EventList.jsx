@@ -1,6 +1,6 @@
 import "./EventList.css";
 import React, { useContext, useEffect, useState } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/context";
 import toast from "react-hot-toast";
 
