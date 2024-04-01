@@ -14,8 +14,8 @@ from rest_framework.decorators import authentication_classes,permission_classes,
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from django.db.models import Q
-from rest_framework.exceptions import AuthenticationFailed
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+from rest_framework.throttling import AnonRateThrottle,UserRateThrottle
+from rest_framework.decorators import throttle_classes
 
 import json
 from dotenv import load_dotenv
@@ -31,8 +31,10 @@ class Users(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+@throttle_classes([UserRateThrottle])
 def GetUserDetails(request,user_id):
     user = User.objects.filter(id=user_id).first()
     if user is None:
@@ -46,6 +48,7 @@ def GetUserDetails(request,user_id):
     })
 
 class LoginView(APIView):
+    throttle_classes=[AnonRateThrottle]
     def post(self, request):
         user = get_object_or_404(User,username=request.data['username'])
         if not user.check_password(request.data['password']):
@@ -54,13 +57,7 @@ class LoginView(APIView):
         token,_ = Token.objects.get_or_create(user=user)
         serializer = UserSerializer(instance=user)
         return Response({'token':token.key,'user':serializer.data['username'],'user_id':user.pk},status=status.HTTP_200_OK)
-
-@api_view(['GET'])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])
-def protected_view(request):
-    # If authentication is successful, return data
-    return Response({'message': 'Authenticated successfully'}, status=status.HTTP_200_OK)
+    
 
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])    
@@ -75,12 +72,14 @@ class LogoutView(APIView):
 
 
 class session_view(APIView):
+    throttle_classes=[UserRateThrottle]
     authentication_classes= [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     def get(self,request,format=None):
         return JsonResponse({'isAuthenticated':True},status=200)
 
 class RegisterView(APIView):
+    throttle_classes=[AnonRateThrottle]
     serializer_class=UserSerializer
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
@@ -103,6 +102,7 @@ class RegisterView(APIView):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated]) 
 class EditProfile(APIView):
+    throttle_classes=[UserRateThrottle]
     def patch(self, request):
         user = User.objects.filter(pk=request.data.get('userID')).first()
         if user:
@@ -119,6 +119,7 @@ class EditProfile(APIView):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated]) 
 class CreateEvent(APIView):
+    throttle_classes=[UserRateThrottle]
     serializer_class = EventoSerializer
     def post(self, request,format=None):
         serializer = self.serializer_class(data=request.data)
@@ -192,12 +193,15 @@ class CreateEvent(APIView):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated]) 
 class Events(generics.ListAPIView):
+    throttle_classes=[UserRateThrottle]
     queryset = Evento.objects.all()
     serializer_class = EventoSerializer
 
+@throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated]) 
 def GetEventDetails(request,event_id):
+    
     event = Evento.objects.filter(id=event_id).first()
     if event is None:
         return JsonResponse({'error': 'Event not found'}, status=404)
@@ -229,9 +233,10 @@ def GetEventDetails(request,event_id):
             'rechazos':rejections_list_serialized,
         })
 
+@throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])      
-def EventOrgData(request,event_id):  
+def EventOrgData(request,event_id): 
     evento = Evento.objects.filter(id=event_id).first()
     if evento:
         detalles_organizador = {
@@ -245,6 +250,7 @@ def EventOrgData(request,event_id):
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 class Invite(APIView):
+    throttle_classes=[UserRateThrottle]
     def post(self, request):
         user = User.objects.filter(Q(email=request.data.get('invitado')) | Q(username=request.data.get('invitado'))).first()
         if user is not None:
@@ -265,6 +271,7 @@ class Invite(APIView):
         else:
             return Response({'err':'no se ha encontrado al invitado'},status=status.HTTP_404_NOT_FOUND)
 
+@throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def ToggleInviteQuality(request,invite_id):
@@ -276,6 +283,7 @@ def ToggleInviteQuality(request,invite_id):
     else:
         return JsonResponse({'err':'Not possible'},status=400)
     
+@throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def DeleteInvite(request, invite_id):
@@ -286,7 +294,8 @@ def DeleteInvite(request, invite_id):
             
     else:
         return JsonResponse({"error": "Invitación no encontrada"}, status=404)
-    
+
+@throttle_classes([UserRateThrottle]) 
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def DeleteEvent(request,event_id):
@@ -297,6 +306,7 @@ def DeleteEvent(request,event_id):
     else:
         return JsonResponse({'error':'evento no encontrado'})
 
+@throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated]) 
 def GetUserParticipationDetails(request, user_id):
@@ -330,6 +340,7 @@ def GetUserParticipationDetails(request, user_id):
             'eventDetails':events
         })
 
+@throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated]) 
 class Schedule(APIView):
@@ -363,7 +374,7 @@ class Schedule(APIView):
         serialized_schedules=[self.serializer_class(schedule).data for schedule in schedules]
         return Response(serialized_schedules,status=status.HTTP_200_OK)
 
-
+@throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def DeleteSchedule(request,schedule_id):
@@ -374,7 +385,8 @@ def DeleteSchedule(request,schedule_id):
             
     else:
         return JsonResponse({"error": "Horario no encontrado"}, status=404)
-    
+
+@throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])     
 class Rejection(APIView):
@@ -401,6 +413,9 @@ class Rejection(APIView):
         serialized_rejections=[self.serializer_class(rejection).data for rejection in rejections]
         return Response(serialized_rejections,status=status.HTTP_200_OK)
 
+@throttle_classes([UserRateThrottle])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])  
 def ClearEventos(request):
     eventos=Evento.objects.all()
     eventos.delete()

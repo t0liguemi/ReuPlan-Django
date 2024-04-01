@@ -43,28 +43,33 @@ const getState = ({ getStore, getActions, setStore }) => {
     },
     actions: {
       getSession: () => {
-        fetch("http://localhost:8000/api/auth", {
+        return fetch("http://localhost:8000/api/auth", {
           method: "GET",
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
           },
         })
-          .then((response) => {
-            if (response.status >= 400 && response.status < 500) {
-              const store = getStore();
-              store.loggedIn = false;
-              setStore(store);
-            }
+        .then((response) => {
+          if (response.status === 429) {
+            toast.error("Límite de solicitudes excedido, inténtalo más tarde");
+            throw new Error("Rate limit exceeded");
+          } else if (response.status === 401) {
+            setStore({ loggedIn: false });
             return response.json();
-          })
-          .then((data) => {
-            if (data.isAuthenticated) {
-              setStore({ loggedIn: true });
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+          } else if (!response.ok) {
+            throw new Error("Network response was not ok");
+          } else {
+            return response.json();
+          }
+        })
+        .then((data) => {
+          if (data && data.isAuthenticated) {
+            setStore({ loggedIn: true });
+          }
+        })
+        .catch((error) => {
+          console.error("An error occurred during session retrieval:", error);
+        });
       },
       findPending: () => {
         const store = getStore();
@@ -97,6 +102,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           }
         )
           .then((resp) => {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            }
             if (resp.status == 200) {
               return resp.json();
             }
@@ -141,16 +152,20 @@ const getState = ({ getStore, getActions, setStore }) => {
             body: JSON.stringify(answers),
           })
             .then((resp) => {
-              if (resp.status == 200) {
-                toast.success(
-                  "Datos de cuenta actualizados",
+              if (resp.status === 429) {
+                toast.error(
+                  "Límite de solicitudes excedido, intentalo más tarde"
                 );
+                return;
+              }
+              if (resp.status == 200) {
+                toast.success("Datos de cuenta actualizados");
                 return resp.json();
               }
             })
             .then((data) => {
-              if(answers.password){
-                actions.logout(navigate)
+              if (answers.password) {
+                actions.logout(navigate);
               }
             })
             .catch((error) => {});
@@ -161,6 +176,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           Authorization: "Token " + localStorage.getItem("reuPlanToken"),
         })
           .then((resp) => {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            }
             if (resp.status == 200) {
               return resp.json();
             }
@@ -207,6 +228,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           }),
         })
           .then((resp) => {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            }
             if (resp.status == 201) {
               toast.success("Evento editado exitosamente");
               return resp.json();
@@ -223,7 +250,14 @@ const getState = ({ getStore, getActions, setStore }) => {
           },
         })
           .then((resp) => {
-            return resp.json();
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else {
+              return resp.json();
+            }
           })
           .then((data) => {
             setStore({ fetchedEvent: data });
@@ -235,7 +269,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         const currentUser = localStorage.getItem("reuPlanUserID");
         const actions = getActions();
         const store = getStore();
-        store.evento.respuestas = []
+        store.evento.respuestas = [];
         store.evento.rechazados = [];
         store.evento.inicio = new Date(
           store.fetchedEvent.event.inicio + "T03:00:00.000Z"
@@ -291,7 +325,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           ]);
         });
         let answerIndex;
-        for (let invitacion of store.fetchedEvent.invitaciones) { 
+        for (let invitacion of store.fetchedEvent.invitaciones) {
           if (
             !store.evento.respuestas.some(
               (respuesta) => respuesta.invitado == invitacion.invitado.id
@@ -351,7 +385,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: JSON.stringify({ search_query: searchValue }),
         })
           .then((resp) => {
-            if (resp.status == 200) {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else if (resp.status == 200) {
               return resp.json();
             } else if (resp.status == 404) {
               if (setUsuarioExiste != undefined) {
@@ -419,7 +458,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           }),
         })
           .then((resp) => {
-            if (resp.status == 200) {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else if (resp.status == 200) {
               return resp.json();
             }
           })
@@ -443,8 +487,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           }),
         })
           .then((resp) => {
-            if (resp.status == 201) {
-              actions.getAuth();
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else if (resp.status == 201) {
               actions.mainEventView(
                 localStorage.getItem("reuPlanCurrentEvent"),
                 navigate
@@ -472,21 +520,23 @@ const getState = ({ getStore, getActions, setStore }) => {
           }),
         })
           .then((resp) => {
-            if (resp.status == 201) {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else if (resp.status == 201) {
               toast.success("Usuario invitado exitosamente");
               actions.getEvent(localStorage.getItem("reuPlanCurrentEvent"));
               return resp.json();
             } else if (resp.status == 409) {
-              toast.error("Usuario ya invitado")
+              toast.error("Usuario ya invitado");
             } else if (resp.status === 404) {
-              toast.error("Usuario no encontrado")
-            
+              toast.error("Usuario no encontrado");
             }
           })
-          .then((data) => {
-          })
-          .catch((error) => {
-          });
+          .then((data) => {})
+          .catch((error) => {});
       },
       toggleImprescindible: (inviteID) => {
         const actions = getActions();
@@ -495,15 +545,17 @@ const getState = ({ getStore, getActions, setStore }) => {
           Authorization: "Token " + localStorage.getItem("reuPlanToken"),
         })
           .then((resp) => {
-            if (resp.status == 200) {
-              toast(
-                "Tipo de invitado cambiado"
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
               );
+              return;
+            } else if (resp.status == 200) {
+              toast("Tipo de invitado cambiado");
               actions.getEvent(localStorage.getItem("reuPlanCurrentEvent"));
 
               return resp.json();
             } else {
-              actions.getAuth();
             }
           })
           .then((data) => {})
@@ -517,7 +569,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           },
         })
           .then((resp) => {
-            if (resp.status == 200) {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else if (resp.status == 200) {
               navigate("/eventList");
               toast("Evento eliminado");
               actions.findInviteesDetails();
@@ -536,7 +593,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           },
         })
           .then((resp) => {
-            if (resp.status == 200) {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else if (resp.status == 200) {
               actions.getEvent(localStorage.getItem("reuPlanCurrentEvent"));
               return resp.json();
             }
@@ -553,7 +615,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           },
         })
           .then((resp) => {
-            if (resp.status == 200) {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else if (resp.status == 200) {
               return resp.json();
             }
           })
@@ -573,7 +640,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           },
         })
           .then((resp) => {
-            if (resp.status == 200) {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else if (resp.status == 200) {
               return resp.json();
             }
           })
@@ -627,6 +699,12 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: JSON.stringify(nullified),
         })
           .then((resp) => {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            }
             if (resp.status == 400) {
               toast.error(resp.msg);
             }
@@ -662,9 +740,6 @@ const getState = ({ getStore, getActions, setStore }) => {
         localStorage.removeItem("reuPlanUserID");
         setStore({ loggedIn: false });
       },
-      getAuth: () => {
-        const actions = getActions();
-      },
       createUser: (e, navigate) => {
         const actions = getActions();
         e.preventDefault();
@@ -672,19 +747,19 @@ const getState = ({ getStore, getActions, setStore }) => {
           toast.error(
             "El usuario debe tener un mínimo de 8 caracteres, sólo letras y números."
           );
-          return
+          return;
         } else if (e.target[1].value.includes(" ")) {
           toast.error(
             "El nombre de usuario no puede contener espacios o caracteres especiales"
           );
-          return
+          return;
         } else if (e.target[2].value != e.target[4].value) {
-          toast.error("Las contraseñas no coincidien.")
-          return
-        } else if (e.target[2].value.length<10){
-          toast.error("La contraseña debe tener al menos 10 caracteres")
-          return
-        }else {
+          toast.error("Las contraseñas no coincidien.");
+          return;
+        } else if (e.target[2].value.length < 10) {
+          toast.error("La contraseña debe tener al menos 10 caracteres");
+          return;
+        } else {
           fetch("http://localhost:8000/api/user/create", {
             method: "POST",
             headers: { "Content-type": "application/json" },
@@ -697,8 +772,14 @@ const getState = ({ getStore, getActions, setStore }) => {
             }),
           })
             .then((resp) => {
+              if (resp.status === 429) {
+                toast.error(
+                  "Límite de solicitudes excedido, intentalo más tarde"
+                );
+                return resp.json;
+              }
               if (resp.status == 400) {
-                return resp.json()
+                return resp.json();
               }
               if (resp.status == 201) {
                 toast.success("Cuenta creada satisfactoriamente!");
@@ -707,19 +788,17 @@ const getState = ({ getStore, getActions, setStore }) => {
               }
             })
             .then((data) => {
-              if (data.error){
-                toast.error("Código inválido o expirado")
+              if (data.error) {
+                toast.error("Código inválido o expirado");
               }
-              if (data.email){
-                toast.error("Email inválido o en uso")
+              if (data.email) {
+                toast.error("Email inválido o en uso");
               }
-              if (data.username){
-                toast.error("Nombre de usuario ya en uso")
+              if (data.username) {
+                toast.error("Nombre de usuario ya en uso");
               }
             })
-            .catch((error) => {
-              
-            });
+            .catch((error) => {});
         }
       },
       loginAttempt: (e, navigate) => {
@@ -734,10 +813,14 @@ const getState = ({ getStore, getActions, setStore }) => {
           }),
         })
           .then((resp) => {
-            if (resp.status == 404 || resp.status == 401) {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            } else if (resp.status == 404 || resp.status == 401) {
               toast.error("Credenciales incorrectas");
-            }
-            if (resp.status == 200) {
+            } else if (resp.status == 200) {
               toast("Bienvenidx de vuelta!");
               return resp.json();
             }
@@ -829,8 +912,13 @@ const getState = ({ getStore, getActions, setStore }) => {
             }),
           })
             .then((resp) => {
+              if (resp.status === 429) {
+                toast.error(
+                  "Límite de solicitudes excedido, intentalo más tarde"
+                );
+                return;
+              }
               if (resp.status == 201) {
-                actions.getAuth();
                 toast.success("Horario agregado", "primary");
                 actions.mainEventView(
                   localStorage.getItem("reuPlanCurrentEvent")
@@ -848,14 +936,19 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       deleteAvailability: (id, navigate) => {
         const actions = getActions();
-        fetch("http://localhost:8000/api/schedule/"+id+"/delete", {
+        fetch("http://localhost:8000/api/schedule/" + id + "/delete", {
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
           },
         })
           .then((resp) => {
+            if (resp.status === 429) {
+              toast.error(
+                "Límite de solicitudes excedido, intentalo más tarde"
+              );
+              return;
+            }
             if (resp.status == 200) {
-              actions.getAuth();
               toast("Horario eliminado");
               actions.mainEventView(
                 localStorage.getItem("reuPlanCurrentEvent"),
@@ -864,8 +957,7 @@ const getState = ({ getStore, getActions, setStore }) => {
               actions.userInvitesAndResponses();
             }
           })
-          .then((data) => {
-          })
+          .then((data) => {})
           .catch((error) => {});
       },
       userBlocksToDate: () => {
@@ -880,7 +972,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           return [fecha, [block.inicio, block.final], block.id];
         });
         setStore({ bloquesUsuarioActual: userBlocksDeletable });
-        console.log("store desde blocks",getStore())
+        console.log("store desde blocks", getStore());
       },
       meetingResultsToDate: () => {
         //Transforma las fechas resultantes en arreglos separados [Date,horario]

@@ -23,6 +23,5 @@ urlpatterns = [
     path('docs', include_docs_urls(title="ReuplanAPI")),
     path('login', LoginView.as_view()),
     path('logout',LogoutView.as_view()),
-    path('auth',session_view.as_view()),
-    path('protected',protected_view)
+    path('auth',session_view.as_view())
 ]

@@ -8,7 +8,6 @@ import LoggedInNavbar from "./LoggedInNavbar";
 function Navbar() {
   const { store, actions } = useContext(Context);
   useEffect(() => {
-    actions.getAuth()
   }, [store.loggedIn]);
   if (store.loggedIn==true) {
     return <LoggedInNavbar/>;

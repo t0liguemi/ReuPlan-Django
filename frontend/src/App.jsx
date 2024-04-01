@@ -22,7 +22,7 @@ import toast, { Toaster } from "react-hot-toast";
 function App() {
   const { store, actions } = useContext(Context);
   useEffect(() => {
-    actions.getSession();
+    if(store.loggedIn===false){actions.getSession();}
   }, []);
   return (
     <div className="App d-flex flex-column min-vh-100">
