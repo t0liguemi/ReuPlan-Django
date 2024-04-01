@@ -1,0 +1,31 @@
+#navbar-yessir {
+  background-color: #d9d9d9;
+  z-index: 10;
+}
+
+#login-btn {
+  width: 150px;
+}
+
+.pending {
+  color: #d95d39;
+  font-weight: semibold;
+}
+
+@keyframes horizontal-shaking {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(5px);
+  }
+  50% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}

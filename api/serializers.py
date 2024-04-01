@@ -1,15 +1,38 @@
 from rest_framework import serializers
 from .models import *
 
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField(write_only=True)
+
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'password','username', 'premium']
+        
+        fields = ['id', 'username', 'email', 'name', 'key','password']
 
 class EventoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Evento
-        fields = ['id', 'name', 'lugar', 'inicio', 'final', 'duracion', 'descripcion', 'privacidad1', 'privacidad2', 'privacidad3', 'privacidad4', 'requisitos1', 'requisitos2', 'requisitos3', 'requisitos4', 'respondidos', 'mapsQuery','organizador']
+        fields = ['id',
+                'name',
+                'lugar',
+                'inicio',
+                'final',
+                'duracion',
+                'descripcion',
+                'privacidad1',
+                'privacidad2',
+                'privacidad3',
+                'privacidad4',
+                'requisitos1',
+                'requisitos2', 
+                'requisitos3', 
+                'requisitos4', 
+                'respondidos', 
+                'mapsQuery',
+                'organizador']
 
 class InvitacionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,9 +42,9 @@ class InvitacionSerializer(serializers.ModelSerializer):
 class RespuestaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Respuesta
-        fields = ['id', 'idEvento', 'idInvitado', 'fecha', 'inicio', 'final']
+        fields = ['id', 'evento', 'invitado', 'fecha', 'inicio', 'final']
 
 class RechazadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rechazado
-        fields = ['id', 'idEvento', 'idInvitado']
+        fields = ['id', 'evento', 'invitado']

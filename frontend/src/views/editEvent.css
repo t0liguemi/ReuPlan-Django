@@ -1,0 +1,9 @@
+.floating-title {
+    position: fixed;
+    top: 90px; /* Adjust the top position as needed */
+    right: 40px; /* Adjust the right position as needed */
+    opacity: 90%;
+    border-radius: 5px; /* Optional: Add rounded corners */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional: Add a subtle shadow for better visibility */
+    z-index: 9; /* Ensure the title is above other elements */
+}

@@ -3,15 +3,36 @@ from .models import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, generics
+from rest_framework.authtoken.models import Token
 from .serializers import *
-from django.contrib.auth.hashers import make_password
+from django.contrib.auth import authenticate,login, get_user_model, logout
+from django.contrib.auth.hashers import make_password, check_password
 from django.http import JsonResponse
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.decorators.http import require_POST
+from rest_framework.decorators import authentication_classes,permission_classes,api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
+from django.db.models import Q
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
 import json
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+USER_KEYS = os.getenv('USER_KEYS')
+
+keys_list = USER_KEYS.split(',')
 
 class Users(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def GetUserDetails(request,user_id):
     user = User.objects.filter(id=user_id).first()
     if user is None:
@@ -21,33 +42,82 @@ def GetUserDetails(request,user_id):
         'id':user.id,
         'name':user.name,
         'email':user.email,
-        'premium':user.premium
+        'key':user.key
     })
 
-class CreateUser(APIView):
-    serializer_class = UserSerializer
+class LoginView(APIView):
+    def post(self, request):
+        user = get_object_or_404(User,username=request.data['username'])
+        if not user.check_password(request.data['password']):
+            return Response({'error':'Invalid Credentials'},status=status.HTTP_404_NOT_FOUND)
+        
+        token,_ = Token.objects.get_or_create(user=user)
+        serializer = UserSerializer(instance=user)
+        return Response({'token':token.key,'user':serializer.data['username'],'user_id':user.pk},status=status.HTTP_200_OK)
 
-    def post(self, request, format=None):
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def protected_view(request):
+    # If authentication is successful, return data
+    return Response({'message': 'Authenticated successfully'}, status=status.HTTP_200_OK)
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])    
+class LogoutView(APIView):
+    def delete(self, request):
+        user=User.objects.filter(username=request.data.get('username')).first()
+        # Get the user's token
+        token = Token.objects.get(user=user)
+        # Delete the token
+        token.delete()
+        return Response({'success': 'Logged out successfully'}, status=status.HTTP_200_OK)
+
+
+class session_view(APIView):
+    authentication_classes= [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    def get(self,request,format=None):
+        return JsonResponse({'isAuthenticated':True},status=200)
+
+class RegisterView(APIView):
+    serializer_class=UserSerializer
+    def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-        # Get the POST data
-            name = serializer.data.get('name')
-            email = serializer.data.get('email')
-            username = serializer.data.get('username')
-            password = serializer.data.get('password')
-            # Validate the data
-            if not name or not email or not username or not password:
-                return Response({'error':
-                                  'Name, email, username, and password are required'}, status=status.HTTP_400_BAD_REQUEST)
-            # Create the user
-            try:
-                user = User.objects.create(name=name, email=email, username=username, password=make_password(password))
-                return Response({'success': 'User created successfully'}, status=status.HTTP_201_CREATED)
-            except Exception as e:
-                return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-    
+            incoming_key =serializer.validated_data.get('key')
+            if incoming_key not in keys_list:
+                return Response({'error':'Key expired or not found'}, status=status.HTTP_400_BAD_REQUEST)
+            user_model = get_user_model()
+            user = user_model.objects.create_user(
+                username=serializer.validated_data['username'],
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password'],
+                key=serializer.validated_data['key'],
+                name=serializer.validated_data.get('name',None)
+                  # Optional if you have username field
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated]) 
+class EditProfile(APIView):
+    def patch(self, request):
+        user = User.objects.filter(pk=request.data.get('userID')).first()
+        if user:
+            # Update the user's password and name if provided in the request
+            new_password=request.data.get('password')
+            new_name=request.data.get('name')
+            if new_password:
+                user.set_password(new_password)
+            user.name = new_name
+            user.save()
+            return Response({'msg':'User details changed successfully'}, status=status.HTTP_200_OK)
+        return Response({'error':'Not possible to change information'}, status=status.HTTP_400_BAD_REQUEST)
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated]) 
 class CreateEvent(APIView):
     serializer_class = EventoSerializer
     def post(self, request,format=None):
@@ -84,11 +154,49 @@ class CreateEvent(APIView):
             return Response({"msg": "Evento creado satisfactoriamente", "id": evento.id}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        
+    def patch(self,request,format=None):
+            # Create an Evento instance
+            evento = Evento.objects.filter(pk=request.data.get('idEvento')).first()
+            if evento is not None:
+                idOrganizador = request.data.get("organizador")
+                organizador = User.objects.get(pk=idOrganizador)
+                # Set attributes from request data
+                evento.organizador=organizador
+                evento.name = request.data.get("name")
+                evento.lugar = request.data.get("lugar")
+                evento.inicio = request.data.get("inicio")
+                evento.final = request.data.get("final")
+                evento.duracion = request.data.get("duracion")
+                evento.descripcion = request.data.get("descripcion")
+                evento.privacidad1 = request.data.get("privacidad1")
+                evento.privacidad2 = request.data.get("privacidad2")
+                evento.privacidad3 = request.data.get("privacidad3")
+                evento.privacidad4 = request.data.get("privacidad4")
+                evento.requisitos1 = request.data.get("requisitos1")
+                evento.requisitos2 = request.data.get("requisitos2")
+                evento.requisitos3 = request.data.get("requisitos3")
+                evento.requisitos4 = request.data.get("requisitos4")
+                evento.respondidos = request.data.get("respondidos")
+                evento.mapsQuery = request.data.get("mapsQuery")
+                if evento.final < evento.inicio:
+                    return Response({"error":"Final previo al inicio"}, status=status.HTTP_400_BAD_REQUEST)
 
+                # Save the Evento instance to the database
+                evento.save()
+                # Return response
+                return Response({"msg": "Evento editado satisfactoriamente", "id": evento.id}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'error':'Error al editar el evento'},status=status.HTTP_400_BAD_REQUEST)
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated]) 
 class Events(generics.ListAPIView):
     queryset = Evento.objects.all()
     serializer_class = EventoSerializer
 
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated]) 
 def GetEventDetails(request,event_id):
     event = Evento.objects.filter(id=event_id).first()
     if event is None:
@@ -96,24 +204,33 @@ def GetEventDetails(request,event_id):
     else:
         # Serialize the event object
         event_serialized = EventoSerializer(event).data
+        organizerID = event_serialized['organizador']
+        organizer = User.objects.filter(pk=organizerID).first()
+        organizer_serialized = UserSerializer(organizer).data
         # Retrieve invitations related to the event
         invitations = Invitacion.objects.filter(evento=event)
         rejections = Rechazado.objects.filter(evento=event)
         responses = Respuesta.objects.filter(evento=event)
         # Serialize each invitation and store in a dictionary
-        invite_list_serialized = [InvitacionSerializer(invitation).data for invitation in invitations]
+        invite_list_serialized = []
+        for invitation in invitations:
+            invite_serialized = InvitacionSerializer(invitation).data
+            invitee_serialized = UserSerializer(invitation.invitado).data
+            invite_serialized['invitado'] = invitee_serialized
+            invite_list_serialized.append(invite_serialized)
         rejections_list_serialized = [RechazadoSerializer(rejection).data for rejection in rejections]
         responses_list_serialized = [RespuestaSerializer(response).data for response in responses]
-        
         # Return JSON response containing event details and invitation details
         return JsonResponse({
             'event': event_serialized,
+            'organizador': organizer_serialized,
             'invitaciones': invite_list_serialized,
             'respuestas':responses_list_serialized,
-            'rechazos':rejections_list_serialized
+            'rechazos':rejections_list_serialized,
         })
 
-        
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])      
 def EventOrgData(request,event_id):  
     evento = Evento.objects.filter(id=event_id).first()
     if evento:
@@ -125,15 +242,15 @@ def EventOrgData(request,event_id):
     else:
         return JsonResponse({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
 
-class Invitee(APIView):
-    serializer_class = InvitacionSerializer
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+class Invite(APIView):
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            target_event = Evento.objects.filter(pk=serializer.data.get("evento")).first()
-            invitee = User.objects.filter(pk=serializer.data.get("invitado")).first()
-            print(target_event,invitee)
-            imprescindible = serializer.data.get("imprescindible")
+        user = User.objects.filter(Q(email=request.data.get('invitado')) | Q(username=request.data.get('invitado'))).first()
+        if user is not None:
+            target_event = Evento.objects.filter(pk=request.data.get("evento")).first()
+            invitee = user
+            imprescindible = request.data.get("imprescindible")
             # Check if the invitee already exists for the target event
             invitee_exists = Invitacion.objects.filter(invitado=invitee, evento=target_event)
             if invitee_exists:
@@ -144,10 +261,23 @@ class Invitee(APIView):
                 invitado=invitee,
                 imprescindible=imprescindible
             )
-            return JsonResponse({"msg": "Invitación creada satisfactoriamente"}, status=status.HTTP_201_CREATED)
+            return Response({"msg": "Invitación creada satisfactoriamente"}, status=status.HTTP_201_CREATED)
         else:
-            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response({'err':'no se ha encontrado al invitado'},status=status.HTTP_404_NOT_FOUND)
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def ToggleInviteQuality(request,invite_id):
+    invite=Invitacion.objects.filter(id=invite_id).first()
+    if invite:
+        invite.imprescindible=not invite.imprescindible
+        invite.save()
+        return JsonResponse({'msg':'Toggled invite quality'},status=200)
+    else:
+        return JsonResponse({'err':'Not possible'},status=400)
+    
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def DeleteInvite(request, invite_id):
     invite = Invitacion.objects.filter(id=invite_id).first()
     if invite:
@@ -157,3 +287,121 @@ def DeleteInvite(request, invite_id):
     else:
         return JsonResponse({"error": "Invitación no encontrada"}, status=404)
     
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def DeleteEvent(request,event_id):
+    event = Evento.objects.filter(pk=event_id).first()
+    if event is not None:
+        event.delete()
+        return JsonResponse({'msg':'Evento eliminado satisfactoriamente'},status=200)
+    else:
+        return JsonResponse({'error':'evento no encontrado'})
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated]) 
+def GetUserParticipationDetails(request, user_id):
+    user = User.objects.filter(id=user_id).first()
+    if user is None:
+        return JsonResponse({'error': 'User not found'}, status=404)
+    else:
+        # Serialize the user object
+        user_serialized = UserSerializer(user).data
+        # Retrieve received invitations for the user
+        invitations = Invitacion.objects.filter(invitado=user)
+        invitations_list_serialized = [InvitacionSerializer(invitation).data for invitation in invitations]
+        # Retrieve emitted rejections for the user
+        emitted_rejections = Rechazado.objects.filter(invitado=user)
+        emitted_rejections_list_serialized = [RechazadoSerializer(rejection).data for rejection in emitted_rejections]
+        # Retrieve responses for the user
+        responses = Respuesta.objects.filter(invitado=user)
+        responses_list_serialized = [RespuestaSerializer(response).data for response in responses]
+
+        events = []
+        for invitation in invitations:
+            events.append(EventoSerializer(invitation.evento).data)
+
+        
+        # Return JSON response containing user details and participation details
+        return JsonResponse({
+            'user': user_serialized,
+            'received_invitations': invitations_list_serialized,
+            'emitted_rejections': emitted_rejections_list_serialized,
+            'responses': responses_list_serialized,
+            'eventDetails':events
+        })
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated]) 
+class Schedule(APIView):
+    serializer_class = RespuestaSerializer
+    def post(self, request):
+        serializer=self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            evento=Evento.objects.filter(pk=serializer.data.get('evento')).first()
+            invitado=User.objects.filter(pk=serializer.data.get('invitado')).first()
+            fecha=serializer.data.get('fecha')
+            inicio=serializer.data.get('inicio')
+            final=serializer.data.get('final')
+            #find if a rejection exists, if it does, add the schedule and delete the rejection
+            rejection = Rechazado.objects.filter(evento=evento,invitado=invitado)
+            if rejection:
+                rejection.delete()
+                Respuesta.objects.create(
+                evento=evento,invitado=invitado,fecha=fecha,inicio=inicio,final=final
+                )
+                return Response({'msg':'horario agregado exitosamente, rechazo existente eliminado'},status=status.HTTP_201_CREATED)
+
+            Respuesta.objects.create(
+                evento=evento,invitado=invitado,fecha=fecha,inicio=inicio,final=final
+            )
+            
+            return Response({'msg':'horario agregado satisfactoriamente'},status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        schedules = Respuesta.objects.all()
+        print(schedules)
+        serialized_schedules=[self.serializer_class(schedule).data for schedule in schedules]
+        return Response(serialized_schedules,status=status.HTTP_200_OK)
+
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def DeleteSchedule(request,schedule_id):
+    schedule = Respuesta.objects.filter(pk=schedule_id).first()
+    if schedule is not None:
+        schedule.delete()
+        return JsonResponse({"msg": "Horario eliminado"}, status=200)       
+            
+    else:
+        return JsonResponse({"error": "Horario no encontrado"}, status=404)
+    
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])     
+class Rejection(APIView):
+    serializer_class = RechazadoSerializer
+    def post(self, request):
+        serializer=self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            evento=Evento.objects.filter(pk=serializer.data.get('evento')).first()
+            invitado=User.objects.filter(pk=serializer.data.get('invitado')).first()
+            Rechazado.objects.create(
+                evento=evento,invitado=invitado
+            )
+            #Find existing responses from the user to the event and delete them, when rejecting said event
+            responses=Respuesta.objects.filter(invitado=invitado,evento=evento)
+            if responses:
+                responses.delete()
+                return Response({'msg':'Rechazo agregado exitosamente, horarios existentes eliminados'})
+
+            return Response({'msg':'Rechazo agregado satisfactoriamente'},status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        rejections = Rechazado.objects.all()
+        print(rejections)
+        serialized_rejections=[self.serializer_class(rejection).data for rejection in rejections]
+        return Response(serialized_rejections,status=status.HTTP_200_OK)
+
+def ClearEventos(request):
+    eventos=Evento.objects.all()
+    eventos.delete()
+    return JsonResponse({'msg':'TODOS LOS EVENTOS HAN SIDO ELIMINADOS'})
