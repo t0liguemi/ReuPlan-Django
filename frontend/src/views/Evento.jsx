@@ -5,14 +5,11 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import Tooltip from "@mui/material/Tooltip";
 
-const Evento = (props) => {
+const Evento = () => {
   const apiKey = import.meta.env.VITE_APP_API_KEY;
   const navigate = useNavigate();
   const { eventID } = useParams();
   const { store, actions } = useContext(Context);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState();
-  const [userBlocks, setUserBlocks] = useState();
   const currentUser = localStorage.getItem("reuPlanUserID");
   const dateOptions = {
     weekday: "long",

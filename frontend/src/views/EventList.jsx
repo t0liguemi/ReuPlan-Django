@@ -49,7 +49,6 @@ const EventList = () => {
         const {
           emitted_rejections,
           responses,
-          received_invitations,
           eventDetails,
         } = participationData;
 
@@ -72,17 +71,6 @@ const EventList = () => {
         setEventosOrganizadosPorMi(eventosOrganizadosPorMi);
         setEventosAceptados(eventosAceptadosActualizados);
         setEventosRechazados(eventosRechazadosActualizados);
-        const eventosPendientes = eventos.filter(
-          (evento) =>
-            !responses.some(
-              (respuesta) => String(respuesta.evento) === String(evento.id)
-            ) &&
-            !emitted_rejections.some(
-              (rechazo) => String(rechazo.evento) === String(evento.id)
-            ) &&
-            String(evento.organizador) !==
-              String(localStorage.getItem("reuPlanUserID"))
-        );
         const eventosInvitados = eventDetails.filter(
           (inv) =>
             !responses.some((resp) => resp.evento == inv.id) &&
