@@ -17,9 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from django.shortcuts import render
+from django.conf import settings
+from django.conf.urls.static import static
+
 
 def index_view(request):
-    return render(request,'static/index.html')
+    return render(request,'index.html')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
