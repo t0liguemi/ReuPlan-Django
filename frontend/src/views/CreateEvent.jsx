@@ -200,6 +200,7 @@ function CreateEvent() {
                       className="form-check-input"
                       type="checkbox"
                       id="checkEmail"
+                      disabled
                     />
                     <label
                       htmlFor="checkEmail"
@@ -213,6 +214,7 @@ function CreateEvent() {
                       className="form-check-input"
                       type="checkbox"
                       id="checkNombre"
+                      disabled
                     />
                     <label
                       htmlFor="checkNombre"
@@ -226,6 +228,7 @@ function CreateEvent() {
                       className="form-check-input"
                       type="checkbox"
                       id="checkTelefono"
+                      disabled
                     />
                     <label
                       htmlFor="checkTelefono"
@@ -239,6 +242,7 @@ function CreateEvent() {
                       className="form-check-input fw-semibold"
                       type="checkbox"
                       id="checkDireccion"
+                      disabled
                     />
                     <label
                       htmlFor="checkDireccion"

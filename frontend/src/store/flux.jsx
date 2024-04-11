@@ -1,6 +1,6 @@
-import axios from "axios";
+
 import toast from "react-hot-toast";
-import Cookies from "universal-cookie";
+
 
 const backendURL = import.meta.env.VITE_APP_BACKEND_URL;
 
@@ -599,6 +599,7 @@ const getState = ({ getStore, getActions, setStore }) => {
               );
               return;
             } else if (resp.status == 200) {
+              toast("Invitación eliminada satisfactoriamente")
               actions.getEvent(localStorage.getItem("reuPlanCurrentEvent"));
               return resp.json();
             }
