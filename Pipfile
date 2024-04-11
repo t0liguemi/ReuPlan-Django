@@ -11,6 +11,7 @@ python-dotenv = "*"
 coreapi = "*"
 setuptools = "*"
 whitenoise = "*"
+dj-database-url = "*"
 
 [dev-packages]
 
