@@ -184,7 +184,7 @@ SESSION_COOKIE_HTTPONLY = True
 # CSRF_COOKIE_HTTPONLY = False
 # SESSION_COOKIE_HTTPONLY = True
 
-STATICFILES_DIRS = [BASE_DIR.joinpath('frontend',"dist","assets")]
+STATICFILES_DIRS = [BASE_DIR.joinpath('frontend',"dist","assets"),BASE_DIR.joinpath('frontend','dist')]
 STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
