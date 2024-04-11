@@ -38,9 +38,9 @@ if __name__ == "__main__":
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ['localhost','web-production-17d9.up.railway.app']
 
 
 # Application definition
@@ -185,6 +185,6 @@ SESSION_COOKIE_HTTPONLY = True
 # SESSION_COOKIE_HTTPONLY = True
 
 STATICFILES_DIRS = [BASE_DIR.joinpath('frontend',"dist","assets")]
-STATIC_ROOT = BASE_DIR.joinpath('static')
+STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
