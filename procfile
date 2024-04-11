@@ -1,1 +1,1 @@
-web: gunicorn ReuPlan_Django.wsgi
+web: python manage.py collectstatic && gunicorn ReuPlan_Django.wsgi
