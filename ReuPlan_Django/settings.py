@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
+import dj_database_url
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -97,22 +98,17 @@ WSGI_APPLICATION = 'ReuPlan_Django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-     'default': {
-         'ENGINE': 'django.db.backends.sqlite3',
-         'NAME': BASE_DIR / 'db.sqlite3',
-     }
-}
 # DATABASES = {
 #      'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'railway',
-#         'USER': 'postgres',
-#         'PASSWORD': 'JgwQDWcRpeaFxjADgcobKiuKvsTYybzP',
-#         'HOST': 'monorail.proxy.rlwy.net',
-#         'PORT': '57037',
-#     }
+#          'ENGINE': 'django.db.backends.sqlite3',
+#          'NAME': BASE_DIR / 'db.sqlite3',
+#      }
 # }
+
+
+
+
+DATABASES = {'default':dj_database_url.config(default=os.getenv('DATABASE_URL'))}
 
 
 # Password validation
@@ -190,3 +186,5 @@ SESSION_COOKIE_HTTPONLY = True
 
 STATICFILES_DIRS = [BASE_DIR.joinpath('frontend',"dist","assets")]
 STATIC_ROOT = BASE_DIR.joinpath('static')
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"

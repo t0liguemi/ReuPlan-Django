@@ -13,6 +13,7 @@ setuptools = "*"
 whitenoise = "*"
 dj-database-url = "*"
 gunicorn = "*"
+psycopg2 = "*"
 
 [dev-packages]
 
