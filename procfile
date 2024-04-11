@@ -1,0 +1,1 @@
+web: gunicorn ReuPlan_Django.wsgi

@@ -12,6 +12,7 @@ coreapi = "*"
 setuptools = "*"
 whitenoise = "*"
 dj-database-url = "*"
+gunicorn = "*"
 
 [dev-packages]
 
