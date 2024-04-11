@@ -23,18 +23,6 @@ function Navbar() {
             <span className="text-primary fw-bold">Reu</span>
             <span className="fw-bold text-success">plan</span>
           </Link>
-          <button
-            className="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarsExample04"
-            aria-controls="navbarsExample04"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span className="navbar-toggler-icon"></span>
-          </button>
-
           <Link
             to="/login"
             className="btn btn-primary fs-6 fw-semibold"

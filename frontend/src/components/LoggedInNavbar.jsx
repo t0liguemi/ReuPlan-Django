@@ -70,7 +70,6 @@ function LoggedInNavbar() {
               {username + " "}
               <CgProfile />
             </Dropdown.Toggle>
-
             <Dropdown.Menu>
               <Dropdown.Item onClick={() => navigate("profile")}>
                 Mi cuenta

@@ -90,7 +90,7 @@ function Footer() {
   ) : (
     <img
       onClick={() => handleEasterEgg()}
-      className="container-fluid z-3 fixed-top"
+      className="easterEggOverlay"
       src="https://i.ibb.co/txDtg31/photo-2022-09-13-00-07-01.jpg"
     />
   );
