@@ -40,7 +40,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost','web-production-17d9.up.railway.app',"reuplan-django-production.up.railway.app","127.0.0.1"]
+ALLOWED_HOSTS = ['localhost','web-production-17d9.up.railway.app',"https://reuplan.up.railway.app","127.0.0.1"]
 
 
 # Application definition
@@ -175,6 +175,6 @@ SESSION_COOKIE_HTTPONLY = True
 STATICFILES_DIRS = [BASE_DIR.joinpath('frontend','dist','assets')]
 STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 
-CSRF_TRUSTED_ORIGINS = ['http://*','https://web-production-17d9.up.railway.app',"https://reuplan-django-production.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = ['http://*','https://web-production-17d9.up.railway.app',"https://reuplan.up.railway.app"]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
