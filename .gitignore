@@ -5,4 +5,4 @@ ReuPlan_Django/__pycache__
 db.sqlite3
 frontend/.env
 api/.env
-static
+staticfiles

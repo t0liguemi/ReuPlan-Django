@@ -79,7 +79,7 @@ ROOT_URLCONF = 'ReuPlan_Django.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR.joinpath('frontend','dist')],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -93,18 +93,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ReuPlan_Django.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-# DATABASES = {
-#      'default': {
-#          'ENGINE': 'django.db.backends.sqlite3',
-#          'NAME': BASE_DIR / 'db.sqlite3',
-#      }
-# }
-
 
 
 
@@ -184,7 +172,9 @@ SESSION_COOKIE_HTTPONLY = True
 # CSRF_COOKIE_HTTPONLY = False
 # SESSION_COOKIE_HTTPONLY = True
 
-STATICFILES_DIRS = [BASE_DIR.joinpath('frontend',"dist","assets"),BASE_DIR.joinpath('frontend','dist')]
+STATICFILES_DIRS = [BASE_DIR.joinpath('frontend','dist')]
 STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
+
+CSRF_TRUSTED_ORIGINS = ['http://*','https://web-production-17d9.up.railway.app',"https://reuplan-django-production.up.railway.app"]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
