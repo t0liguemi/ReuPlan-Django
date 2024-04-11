@@ -13,11 +13,22 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 from dotenv import load_dotenv
 import os
-import dj_database_url
 
 load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+if __name__ == "__main__":
+    import sys
+
+    from django.core.management import execute_from_command_line
+
+    # Use 0.0.0.0 to bind to all available network interfaces
+    # This allows connections from other devices in the same network
+    sys.argv.append("0.0.0.0:8000")
+
+    execute_from_command_line(sys.argv)
+
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,9 +37,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['.vercel.app','localhost','127.0.0.1','now.sh']
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
@@ -53,6 +64,7 @@ AUTH_USER_MODEL = 'api.User'
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -85,22 +97,22 @@ WSGI_APPLICATION = 'ReuPlan_Django.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
 DATABASES = {
      'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD': 'JgwQDWcRpeaFxjADgcobKiuKvsTYybzP',
-        'HOST': 'monorail.proxy.rlwy.net',
-        'PORT': '57037',
-    }
+         'ENGINE': 'django.db.backends.sqlite3',
+         'NAME': BASE_DIR / 'db.sqlite3',
+     }
 }
+# DATABASES = {
+#      'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'railway',
+#         'USER': 'postgres',
+#         'PASSWORD': 'JgwQDWcRpeaFxjADgcobKiuKvsTYybzP',
+#         'HOST': 'monorail.proxy.rlwy.net',
+#         'PORT': '57037',
+#     }
+# }
 
 
 # Password validation
@@ -137,7 +149,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL ='/static/'
+STATIC_URL = "static/"
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -176,7 +188,5 @@ SESSION_COOKIE_HTTPONLY = True
 # CSRF_COOKIE_HTTPONLY = False
 # SESSION_COOKIE_HTTPONLY = True
 
-if DEBUG:
-    STATICFILES_DIRS = [BASE_DIR.joinpath('frontend','dist','assets')]
-else:
-    STATIC_ROOT = BASE_DIR.joinpath('staticfiles_build','static')
+STATICFILES_DIRS = [BASE_DIR.joinpath('frontend',"dist","assets")]
+STATIC_ROOT = BASE_DIR.joinpath('static')

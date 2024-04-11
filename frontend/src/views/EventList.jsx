@@ -19,15 +19,14 @@ const EventList = () => {
   const fetchData = async () => {
     try {
       const [eventsResponse, participationResponse] = await Promise.all([
-        fetch("http://localhost:8000/api/event/all", {
+        fetch("api/event/all", {
           method: "GET",
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
           },
         }),
-        fetch(
-          "http://localhost:8000/api/user/" +
+        fetch("api/user/" +
             localStorage.getItem("reuPlanUserID") +
             "/participation",
           {
@@ -88,7 +87,7 @@ const EventList = () => {
   };
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/auth", {
+    fetch("api/auth", {
       headers: {
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),
       },

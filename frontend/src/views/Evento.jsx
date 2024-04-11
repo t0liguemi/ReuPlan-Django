@@ -22,7 +22,7 @@ const Evento = () => {
   useEffect(() => {
     store.eventReady = false;
     localStorage.setItem("reuPlanCurrentEvent", eventID);
-    fetch("http://localhost:8000/api/auth", {
+    fetch("api/auth", {
       method: "GET",
       headers: {
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),

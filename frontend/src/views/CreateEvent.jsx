@@ -22,7 +22,7 @@ function CreateEvent() {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/auth", {
+    fetch("api/auth", {
       method: "GET",
       headers: {
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),
@@ -383,7 +383,7 @@ function CreateEvent() {
             <div>
               <div className="d-flex justify-content-center">
                 <Link
-                  onClick={()=>store.eventReady}
+                  onClick={()=>store.eventReady=false}
                   to={"/event/" + localStorage.getItem("reuPlanCurrentEvent")}
                   className="btn btn-success fs-5 fw-semibold w-50 py-3 rounded"
                 >

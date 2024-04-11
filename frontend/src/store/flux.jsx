@@ -1,7 +1,8 @@
 import axios from "axios";
 import toast from "react-hot-toast";
 import Cookies from "universal-cookie";
-const cookies = new Cookies();
+
+const backendURL = import.meta.env.VITE_APP_BACKEND_URL;
 
 const getState = ({ getStore, getActions, setStore }) => {
   return {
@@ -43,7 +44,7 @@ const getState = ({ getStore, getActions, setStore }) => {
     },
     actions: {
       getSession: () => {
-        return fetch("http://localhost:8000/api/auth", {
+        return fetch("api/auth", {
           method: "GET",
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
@@ -90,7 +91,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       userInvitesAndResponses: () => {
         const actions = getActions();
         fetch(
-          "http://localhost:8000/api/user/" +
+          "api/user/" +
             localStorage.getItem("reuPlanUserID") +
             "/participation",
           {
@@ -142,7 +143,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         ) {
           toast("No se hicieron cambios");
         } else {
-          fetch("http://localhost:8000/api/user/edit", {
+          fetch("api/user/edit", {
             method: "PATCH",
             headers: {
               "Content-type": "application/json",
@@ -171,7 +172,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
       },
       fetchCurrentUser: (id) => {
-        fetch("http://localhost:8000/api/user/get/" + id, {
+        fetch("api/user/get/" + id, {
           Authorization: "Token " + localStorage.getItem("reuPlanToken"),
         })
           .then((resp) => {
@@ -200,7 +201,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           return {};
         }
         const actions = getActions();
-        fetch("http://localhost:8000/api/event/create", {
+        fetch("api/event/create", {
           method: "PATCH",
           headers: {
             "Content-type": "application/json",
@@ -243,7 +244,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       mainEventView: (eventID, navigate) => {
         const actions = getActions();
-        fetch("http://localhost:8000/api/event/get/" + eventID, {
+        fetch("api/event/get/" + eventID, {
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
           },
@@ -375,7 +376,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       queryUser: (searchValue, setUsuarioExiste) => {
         const store = getStore();
         const actions = getActions();
-        fetch("http://localhost:8000/api/user", {
+        fetch("api/user", {
           method: "POST",
           headers: {
             "Content-type": "application/json",
@@ -446,7 +447,7 @@ const getState = ({ getStore, getActions, setStore }) => {
 
       findEventRejections: (idEvento) => {
         let { currentEventsRejections } = getStore();
-        fetch("http://localhost:8000/api/rejections", {
+        fetch("api/rejections", {
           method: "POST",
           headers: {
             "Content-type": "application/json",
@@ -474,7 +475,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       rejectInvite: (navigate) => {
         const actions = getActions();
-        fetch("http://localhost:8000/api/rejection", {
+        fetch("api/rejection", {
           method: "POST",
           headers: {
             "Content-type": "application/json",
@@ -506,7 +507,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       createNewInvite: (inviteeID, setUsuarioExiste) => {
         const actions = getActions();
-        fetch("http://localhost:8000/api/invite", {
+        fetch("api/invite", {
           method: "POST",
           headers: {
             "Content-type": "application/json",
@@ -540,7 +541,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       toggleImprescindible: (inviteID) => {
         const actions = getActions();
         const store = getStore();
-        fetch("http://localhost:8000/api/invite/" + inviteID + "/toggle", {
+        fetch("api/invite/" + inviteID + "/toggle", {
           Authorization: "Token " + localStorage.getItem("reuPlanToken"),
         })
           .then((resp) => {
@@ -562,7 +563,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       deleteEvent: (id, navigate) => {
         const actions = getActions();
-        fetch("http://localhost:8000/api/event/" + id + "/delete", {
+        fetch("api/event/" + id + "/delete", {
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
           },
@@ -586,7 +587,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       uninviteUser: (id) => {
         const actions = getActions();
-        fetch("http://localhost:8000/api/invite/delete/" + id, {
+        fetch("api/invite/delete/" + id, {
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"), //ENCONTRAR EVENTO ACA
           },
@@ -607,7 +608,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       getEvent: (eventID) => {
         const actions = getActions();
-        fetch("http://localhost:8000/api/event/get/" + eventID, {
+        fetch("api/event/get/" + eventID, {
           method: "GET",
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"), //ENCONTRAR EVENTO ACA
@@ -631,7 +632,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       getAllEvents: () => {
         const store = getStore();
-        fetch("http://localhost:8000/api/events", {
+        fetch("api/events", {
           method: "GET",
           headers: {
             "Content-type": "application/json",
@@ -688,7 +689,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           }
         }
 
-        fetch("http://localhost:8000/api/event/create", {
+        fetch("api/event/create", {
           method: "POST",
           headers: {
             "Content-type": "application/json",
@@ -723,7 +724,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       logout: (navigate) => {
         navigate("/login");
         const actions = getActions();
-        fetch("http://localhost:8000/api/logout", {
+        fetch("api/logout", {
           method: "DELETE",
           headers: {
             "Content-type": "application/json",
@@ -759,7 +760,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           toast.error("La contraseña debe tener al menos 10 caracteres");
           return;
         } else {
-          fetch("http://localhost:8000/api/user/create", {
+          fetch("api/user/create", {
             method: "POST",
             headers: { "Content-type": "application/json" },
             body: JSON.stringify({
@@ -803,7 +804,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       loginAttempt: (e, navigate) => {
         const actions = getActions();
         e.preventDefault();
-        fetch("http://localhost:8000/api/login", {
+        fetch("api/login", {
           method: "POST",
           headers: { "Content-type": "application/json" },
           body: JSON.stringify({
@@ -896,7 +897,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         if (newEnd - newStart <= 0) {
           toast.error("La hora final debe ser posterior a la de inicio!");
         } else {
-          fetch("http://localhost:8000/api/schedule", {
+          fetch("api/schedule", {
             method: "POST",
             headers: {
               "Content-type": "application/json",
@@ -935,7 +936,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       deleteAvailability: (id, navigate) => {
         const actions = getActions();
-        fetch("http://localhost:8000/api/schedule/" + id + "/delete", {
+        fetch("api/schedule/" + id + "/delete", {
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
           },

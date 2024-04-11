@@ -18,7 +18,7 @@ function EditEvent() {
     actions.createNewInvite(targetUser);
   }
   useEffect(() => {
-    fetch("http://localhost:8000/api/auth", {
+    fetch("api/auth", {
       headers: {
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),
       },

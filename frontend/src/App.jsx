@@ -1,7 +1,7 @@
 import "bootstrap/dist/js/bootstrap.min.js";
 import "bootstrap/dist/css/bootstrap.min.css";
 import injectContext, { Context } from "./store/context";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, HashRouter, Route, Routes } from "react-router-dom";
 import Evento from "./views/Evento.jsx";
 import Footer from "./components/Footer.jsx";
 import "./custom.css";
@@ -25,7 +25,7 @@ function App() {
   }, []);
   return (
     <div className="App d-flex flex-column min-vh-100">
-      <BrowserRouter>
+      <HashRouter>
         <ScrollToAnchor />
         <Navbar />
         <Routes>
@@ -64,7 +64,7 @@ function App() {
           }}
         />
         <Footer />
-      </BrowserRouter>
+      </HashRouter>
     </div>
   );
 }
