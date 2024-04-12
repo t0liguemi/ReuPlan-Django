@@ -1,15 +1,25 @@
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import Logo from "../resources/logo.svg?react";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import { Context } from "../store/context";
 
 function Login() {
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
+  const [readyForRender, setReadyForRender] = useState(false);
 
   function login(e) {
-    actions.loginAttempt(e,navigate);
+    actions.loginAttempt(e, navigate);
   }
+
+  useEffect(() => {
+    if (store.loggedIn) {
+      navigate("/eventList");
+    } else {
+      setReadyForRender(true);
+    }
+  }, []);
+  if (readyForRender) {
     return (
       <div className="container">
         <form className="w-50 mx-auto my-5">
@@ -24,7 +34,9 @@ function Login() {
               id="floatingInput"
               placeholder="nombre de usuario"
             />
-            <label htmlFor="floatingPassowrd" className="">Nombre de usuario</label>
+            <label htmlFor="floatingPassowrd" className="">
+              Nombre de usuario
+            </label>
           </div>
           <div className="form-floating">
             <input
@@ -51,10 +63,6 @@ function Login() {
       </div>
     );
   }
+}
 
 export default Login;
-
-
-
-
-

@@ -4,36 +4,30 @@ import Logo from "../resources/logo.svg?react";
 import "./navbarStyle.css";
 import { Context } from "../store/context";
 import LoggedInNavbar from "./LoggedInNavbar";
+import Navbar from "react-bootstrap/Navbar";
+import Container from "react-bootstrap/Container";
 
-function Navbar() {
-  const { store, actions } = useContext(Context);
-  useEffect(() => {}, [store.loggedIn]);
-  if (store.loggedIn == true) {
-    return <LoggedInNavbar />;
-  } else if (store.loggedIn == false) {
-    return (
-      <nav
-        className="sticky-top navbar navbar-expand-md border"
-        id="navbar-yessir"
-        aria-label="Fourth navbar example"
-      >
-        <div className="container-fluid">
-          <Link className="navbar-brand fw-bold d-inline" to="/">
-            <Logo width={30} height={35} fill="#f18805" />{" "}
-            <span className="text-primary fw-bold">Reu</span>
-            <span className="fw-bold text-success">plan</span>
-          </Link>
-          <Link
-            to="/login"
-            className="btn btn-primary fs-6 fw-semibold"
-            id="login-btn"
-          >
-            Iniciar Sesión
-          </Link>
-        </div>
-      </nav>
-    );
-  }
+function Navbarloggedout() {
+  useEffect(() => {}, []);
+
+  return (
+    <Navbar expand="lg" className="navbar-reuplan">
+      <Container fluid>
+        <Link className="navbar-brand fw-bold d-inline" to="/">
+          <Logo width={30} height={35} fill="#f18805" />
+          <span className="text-primary fw-bold">Reu</span>
+          <span className="fw-bold text-success">plan</span>
+        </Link>
+        <Link
+          to="/login"
+          className="btn btn-primary fs-6 fw-semibold"
+          id="login-btn"
+        >
+          Iniciar Sesión
+        </Link>
+      </Container>
+    </Navbar>
+  );
 }
 
-export default Navbar;
+export default Navbarloggedout;

@@ -8,6 +8,7 @@ import "./custom.css";
 import CreateEvent from "./views/CreateEvent.jsx";
 import EditEvent from "./views/EditEvent.jsx";
 import Navbar from "./components/Navbar.jsx";
+import LoggedInNavbar from "./components/LoggedInNavbar.jsx";
 import Login from "./views/Login.jsx";
 import Welcome from "./views/WelcomeSplash.jsx";
 import "./custom.css";
@@ -21,16 +22,22 @@ import { Toaster } from "react-hot-toast";
 function App() {
   const { store, actions } = useContext(Context);
   useEffect(() => {
-    if(store.loggedIn===false){actions.getSession();}
+    if (store.loggedIn === false) {
+      actions.getSession();
+    }
   }, []);
+
   return (
     <div className="App d-flex flex-column min-vh-100">
       <HashRouter>
         <ScrollToAnchor />
-        <Navbar />
+        {store.loggedIn? <LoggedInNavbar /> : <Navbar />}
         <Routes>
           <Route path="/login" Component={Login} />
-          <Route path="/signin" Component={SignIn} />
+          <Route
+            path="/signin"
+            Component={store.loggedIn ? EventList : SignIn}
+          />
           <Route path="/profile" Component={Profile} />
           <Route path="/" Component={Welcome} />
           <Route path="/create" Component={CreateEvent} />
@@ -49,7 +56,7 @@ function App() {
             className: "",
             style: {
               background: "#f18805",
-              color: '#ffffff'
+              color: "#ffffff",
             },
             success: {
               style: {

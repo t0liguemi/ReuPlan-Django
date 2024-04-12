@@ -1,7 +1,10 @@
+import { useContext } from "react";
 import CalendarSVG from "../resources/Calendarios.svg?react";
 import { Link } from "react-router-dom";
+import { Context } from "../store/context";
 
 function Bienvenida() {
+  const { store, actions } = useContext(Context);
   return (
     <div>
       <div
@@ -74,28 +77,33 @@ function Bienvenida() {
                   contáctame
                 </Link>{" "}
                 y envíame tus datos para entregarte una clave.
-                <br/>
-                Eventualmente limitaré la cantidad de eventos simultáneos por usuario, pero por ahora usen la app tanto como necesiten!
+                <br />
+                Eventualmente limitaré la cantidad de eventos simultáneos por
+                usuario, pero por ahora usen la app tanto como necesiten!
               </p>
             </div>
             <div className="col-sm-4 py-3 justify-content-center d-flex">
               <CalendarSVG height="90%" width="100%" />
             </div>
           </div>
-          <div className="row">
-            <Link
-              to="/login"
-              className="mx-2 mb-5 mt-5 fs-5 py-2 btn btn-primary px-5 fw-semibold mb-2"
-            >
-              ¡Empezar Ahora!
-            </Link>
-            {/* <Link
+          {store.loggedIn ? (
+            <></>
+          ) : (
+            <div className="row">
+              <Link
+                to="/login"
+                className="mx-2 mb-5 mt-5 fs-5 py-2 btn btn-primary px-5 fw-semibold mb-2"
+              >
+                ¡Empezar Ahora!
+              </Link>
+              {/* <Link
               to="/about"
               className="mx-2 fs-5 py-2 btn btn-primary px-5 fw-semibold"
             >
               Conoce mas!
             </Link> */}
-          </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
