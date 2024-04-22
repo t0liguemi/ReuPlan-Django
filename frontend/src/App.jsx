@@ -38,6 +38,10 @@ function App() {
             path="/signin"
             Component={store.loggedIn ? EventList : SignIn}
           />
+          <Route
+            path="/signin/:newUsername/:testerKey"
+            Component={store.loggedIn ? EventList : SignIn}
+          />
           <Route path="/profile" Component={Profile} />
           <Route path="/" Component={Welcome} />
           <Route path="/create" Component={CreateEvent} />

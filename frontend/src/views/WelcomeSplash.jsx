@@ -58,13 +58,13 @@ function Bienvenida() {
               <span className="text-primary fs-2 fw-bold ">Reu</span>
               <span className="text-success fs-2 fw-bold ">plan</span>
               <span className=" fs-2 fw-bold ">
-                , una aplicación web minimalista con la única función de
-                facilitar los encuentros.
+                , una aplicación web minimalista con un único propósito:
+                Facilitar los encuentros.
               </span>
               <p className="mt-4 fs-5 fw-semibold">
                 Con Reuplan puedes organizar tus reuniones en tiempo récord, sin
                 tener que ocuparte personalmente de la disponibilidad de tus
-                invitados. Tu indica en qué periodo debe ocurrir tu evento y tus
+                invitados. Solamente indica en qué periodo debe ocurrir tu evento y tus
                 invitados agregarán sus disponibilidades.
               </p>
               <p className="fs-5 fw-normal mt-4 opacity-75">

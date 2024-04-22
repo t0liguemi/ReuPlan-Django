@@ -1,10 +1,13 @@
 import React, { useContext } from "react";
 import { Context } from "../store/context";
 import { useNavigate } from "react-router";
+import {useParams} from "react-router-dom"
+
 
 const SignIn = () => {
-  const navigate = useNavigate() 
-
+  const navigate = useNavigate()
+ 
+  const { testerKey, newUsername } = useParams()
   const {store,actions}=useContext(Context)
   return (
     <div className="container py-3">
@@ -72,6 +75,7 @@ const SignIn = () => {
               id="nameinput"
               className="text form-control my-2"
               placeholder="nombre"
+              defaultValue={newUsername}
             ></input>
           </div>
         </div>
@@ -84,6 +88,7 @@ const SignIn = () => {
               id="betakey"
               className="text form-control my-2"
               placeholder="tu código"
+              defaultValue={testerKey}
             ></input>
           </div>
         </div>
