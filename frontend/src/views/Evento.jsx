@@ -298,7 +298,8 @@ const Evento = () => {
               <div className="my-4">
                 <h4 className="fw-semibold">
                   Agregar bloques de disponibilidad:
-                </h4>
+                </h4><br/>
+                <small>Tus respuestas se intersectarán con los demas asistentes, agrega libremente todos los horarios en que tu puedas asistir, el calendario se preocupará de combinar los otros horarios con los tuyos.</small>
                 <div className="row my-3">
                   <div className="col-sm-4 d-flex my-2">
                     <h5 className="fw-semibold w-25 align-self-center">

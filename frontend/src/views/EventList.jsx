@@ -152,6 +152,7 @@ const EventList = () => {
               Eventos que tu creaste en la aplicación.
             </small>
           </div>
+          {eventosOrganizadosPorMi.length===0?<h5>No hay eventos creados por tí.</h5>:<></>}
           {eventosOrganizadosPorMi.map((evento) => (
             <Link
               to={`/event/${evento.id}`}
@@ -175,8 +176,8 @@ const EventList = () => {
           <div className="mb-3">
             <h3 className="pt-4 mb-0 pb-0 fw-semibold">Pendientes</h3>
             <small className="text-secondary fw-semibold py-0 my-0">
-              Eventos, de los cuales eres participante, a los que aún no has
-              respondido.
+              Eventos, a los que has sido invitado, en los que aún no has
+              ingresado una respuesta.
             </small>
           </div>
           {eventosPendientesFiltrados.map((evento) => (
@@ -202,7 +203,7 @@ const EventList = () => {
           <div className="mb-3">
             <h3 className="pt-4 mb-0 pb-0 fw-semibold">Aceptados</h3>
             <small className="text-secondary fw-semibold py-0 my-0">
-              Eventos, de los cuales eres participante, a los que has ingresado
+              Eventos, a los que has sido invitado, a los que has ingresado
               disponibilidades.
             </small>
           </div>

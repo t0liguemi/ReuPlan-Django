@@ -18,6 +18,7 @@ import Profile from "./views/Profile.jsx";
 import ScrollToAnchor from "./components/ScrollToAnchor.jsx";
 import { useContext, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
+import { IoCloseCircleOutline } from "react-icons/io5";
 
 function App() {
   const { store, actions } = useContext(Context);
@@ -54,7 +55,7 @@ function App() {
           <Route render={() => <h1>Not found!</h1>} />
         </Routes>
         <Toaster
-          position="bottom-right"
+          position="top-center"
           reverseOrder={false}
           toastOptions={{
             className: "",

@@ -3,6 +3,7 @@ from .views import *
 from rest_framework.documentation import include_docs_urls
 
 urlpatterns = [
+    path('test', ApiConnected),
     path('user/create', RegisterView.as_view()),
     path('user', Users.as_view()),
     path('user/edit', EditProfile.as_view()),

@@ -27,6 +27,9 @@ USER_KEYS = os.getenv('USER_KEYS')
 
 keys_list = USER_KEYS.split(',')
 
+def ApiConnected(request):
+    return JsonResponse({'msg':'Sistema en linea!'})
+
 class Users(generics.ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer

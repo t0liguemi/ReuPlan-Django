@@ -7,7 +7,6 @@ import { Context } from "../store/context";
 import Dropdown from "react-bootstrap/Dropdown";
 import toast from "react-hot-toast";
 import Container from "react-bootstrap/Container";
-import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Badge from 'react-bootstrap/Badge';
 
