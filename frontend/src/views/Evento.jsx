@@ -4,6 +4,8 @@ import { Context } from "../store/context";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import Tooltip from "@mui/material/Tooltip";
+const backendURL =  import.meta.env.VITE_APP_MODE === "development" ? import.meta.env.VITE_APP_BACKEND_URL : ""
+
 
 const Evento = () => {
   const apiKey = import.meta.env.VITE_APP_API_KEY;
@@ -22,7 +24,7 @@ const Evento = () => {
   useEffect(() => {
     store.eventReady = false;
     localStorage.setItem("reuPlanCurrentEvent", eventID);
-    fetch("api/auth", {
+    fetch(backendURL+"api/auth", {
       method: "GET",
       headers: {
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),

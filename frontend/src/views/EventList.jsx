@@ -3,6 +3,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/context";
 import toast from "react-hot-toast";
+const backendURL =  import.meta.env.VITE_APP_MODE === "development" ? import.meta.env.VITE_APP_BACKEND_URL : ""
+
 
 const EventList = () => {
   const { store, actions } = useContext(Context);
@@ -19,14 +21,14 @@ const EventList = () => {
   const fetchData = async () => {
     try {
       const [eventsResponse, participationResponse] = await Promise.all([
-        fetch("api/event/all", {
+        fetch(backendURL+"api/event/all", {
           method: "GET",
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
           },
         }),
-        fetch("api/user/" +
+        fetch(backendURL+"api/user/" +
             localStorage.getItem("reuPlanUserID") +
             "/participation",
           {
@@ -87,7 +89,7 @@ const EventList = () => {
   };
 
   useEffect(() => {
-    fetch("api/auth", {
+    fetch(backendURL+"api/auth", {
       headers: {
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),
       },
