@@ -284,9 +284,10 @@ const getState = ({ getStore, getActions, setStore }) => {
             }
           })
           .then((data) => {
-            if (data){
-            setStore({ fetchedEvent: data });
-            actions.rebuildEventFromAPI(navigate);}
+            if (data) {
+              setStore({ fetchedEvent: data });
+              actions.rebuildEventFromAPI(navigate);
+            }
           })
           .catch((error) => {});
       },
@@ -910,18 +911,18 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       addNewAvailability: (e, navigate) => {
         const actions = getActions();
-        if (e.target.form[0].value == "") {
+        if (e.target.fechaNuevoBloque.value == "") {
           toast.error("Elige una fecha!");
           return;
         }
         const idEvento = localStorage.getItem("reuPlanCurrentEvent");
-        const newYear = e.target.form[0].value.slice(0, 4);
-        const newMonth = e.target.form[0].value.slice(5, 7);
-        const newDay = e.target.form[0].value.slice(8, 10);
-        const newStart = e.target.form[1].value;
-        const newEnd = e.target.form[2].value;
+        const newYear = e.target.fechaNuevoBloque.value.slice(6);
+        const newMonth = e.target.fechaNuevoBloque.value.slice(3,5);
+        const newDay = e.target.fechaNuevoBloque.value.slice(0,2);
+        const newStart = e.target.horaInicioNuevoBloque.value;
+        const newEnd = e.target.horaFinalNuevoBloque.value;
         const userID = localStorage.getItem("reuPlanUserID");
-
+        console.log('y',newYear,'m',newMonth,'d',newDay,'start',newStart,'end',newEnd)
         if (newEnd - newStart <= 0) {
           toast.error("La hora final debe ser posterior a la de inicio!");
         } else {
