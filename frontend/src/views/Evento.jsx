@@ -13,7 +13,7 @@ const Evento = () => {
   const { eventID } = useParams();
   const { store, actions } = useContext(Context);
   const currentUser = localStorage.getItem("reuPlanUserID");
-  const dateOptions = {
+  const dateOptions = { 
     weekday: "long",
     year: "numeric",
     month: "long",
@@ -22,6 +22,7 @@ const Evento = () => {
   };
 
   useEffect(() => {
+    if (store.eventFound===false){navigate("/eventList")}
     store.eventReady = false;
     localStorage.setItem("reuPlanCurrentEvent", eventID);
     fetch(backendURL+"api/auth", {
@@ -42,7 +43,7 @@ const Evento = () => {
       })
       .then((data) => {})
       .catch((error) => {});
-
+      
     return () => {
       store.eventReady = false;
     };

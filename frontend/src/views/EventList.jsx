@@ -3,10 +3,12 @@ import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/context";
 import toast from "react-hot-toast";
-const backendURL =  import.meta.env.VITE_APP_MODE === "development" ? import.meta.env.VITE_APP_BACKEND_URL : ""
+
 
 
 const EventList = () => {
+  const backendURL =  import.meta.env.VITE_APP_MODE === "development" ? import.meta.env.VITE_APP_BACKEND_URL : ""
+
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
   const [loaded, setLoaded] = useState(false);
@@ -101,15 +103,6 @@ const EventList = () => {
           navigate("/login");
         } else if (resp.status == 200) {
           fetchData();
-          if (
-            store.fetchedEvent.invitaciones.some(
-              (inv) => inv.invitado.id == currentUser
-            ) == false &&
-            store.fetchedEvent.organizador.id != currentUser
-          ) {
-            toast.error("No tienes acceso a ese evento");
-            navigate("/eventList");
-          }
         }
       })
       .then((data) => {})
