@@ -4,6 +4,20 @@ import { Context } from "../store/context";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import Tooltip from "@mui/material/Tooltip";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { esES } from "@mui/x-date-pickers/locales";
+import dayjs from "dayjs";
+import "dayjs/locale/es";
+import utc from 'dayjs/plugin/utc'
+
+const backendURL =
+  import.meta.env.VITE_APP_MODE === "development"
+    ? import.meta.env.VITE_APP_BACKEND_URL
+    : "";
+
+ dayjs.extend(utc);
 
 const Evento = () => {
   const apiKey = import.meta.env.VITE_APP_API_KEY;
@@ -22,7 +36,7 @@ const Evento = () => {
   useEffect(() => {
     store.eventReady = false;
     localStorage.setItem("reuPlanCurrentEvent", eventID);
-    fetch("api/auth", {
+    fetch(backendURL + "api/auth", {
       method: "GET",
       headers: {
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),
@@ -293,13 +307,24 @@ const Evento = () => {
               </button>
             </div>
           ) : (
-            <form>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                actions.addNewAvailability(e, navigate);
+              }}
+            >
               <h2 className="mb-4 fw-semibold">Tu Respuesta:</h2>
               <div className="my-4">
                 <h4 className="fw-semibold">
                   Agregar bloques de disponibilidad:
-                </h4><br/>
-                <small>Tus respuestas se intersectarán con los demas asistentes, agrega libremente todos los horarios en que tu puedas asistir, el calendario se preocupará de combinar los otros horarios con los tuyos.</small>
+                </h4>
+                <br />
+                <small>
+                  Tus respuestas se intersectarán con los demas asistentes,
+                  agrega libremente todos los horarios en que tu puedas asistir,
+                  el calendario se preocupará de combinar los otros horarios con
+                  los tuyos.
+                </small>
                 <div className="row my-3">
                   <div className="col-sm-4 d-flex my-2">
                     <h5 className="fw-semibold w-25 align-self-center">
@@ -315,16 +340,28 @@ const Evento = () => {
                         readOnly
                       ></input>
                     ) : (
-                      <input
-                        name="fechaNuevoBloque"
-                        type="date"
-                        className="form-control fw-semibold"
-                        defaultValue={store.evento.inicio
-                          .toISOString()
-                          .slice(0, 10)}
-                        min={store.evento.inicio.toISOString().slice(0, 10)}
-                        max={store.evento.final.toISOString().slice(0, 10)}
-                      ></input>
+                      <>
+                        <LocalizationProvider
+                          dateAdapter={AdapterDayjs}
+                          adapterLocale="es"
+                          localeText={
+                            esES.components.MuiLocalizationProvider.defaultProps
+                              .localeText
+                          }
+                        >
+                          <DatePicker
+                            name="fechaNuevoBloque"
+                            format="DD/MM/YYYY"
+                            defaultValue={dayjs()}
+                            minDate={dayjs.utc(
+                              store.evento.inicio.toISOString().slice(0, 10)
+                            )}
+                            maxDate={dayjs.utc(
+                              store.evento.final.toISOString().slice(0, 10)
+                            )}
+                          />
+                        </LocalizationProvider>
+                      </>
                     )}
                   </div>
                   <div className="d-flex col-sm-3 my-2">
@@ -396,13 +433,7 @@ const Evento = () => {
                 </div>
               </div>
               <div className="row justify-content-center">
-                <button
-                  className="btn btn-primary fw-semibold"
-                  onClick={(event) => {
-                    event.preventDefault();
-                    actions.addNewAvailability(event, navigate);
-                  }}
-                >
+                <button className="btn btn-primary fw-semibold">
                   Agregar Bloque
                 </button>
               </div>

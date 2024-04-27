@@ -3,6 +3,8 @@ import { Context } from "../store/context";
 import { Navigate } from "react-router";
 import { useNavigate, useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
+const backendURL =  import.meta.env.VITE_APP_MODE === "development" ? import.meta.env.VITE_APP_BACKEND_URL : ""
+
 
 function CreateEvent() {
   const { store, actions } = useContext(Context);
@@ -22,7 +24,7 @@ function CreateEvent() {
   }, []);
 
   useEffect(() => {
-    fetch("api/auth", {
+    fetch(backendURL+"api/auth", {
       method: "GET",
       headers: {
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),

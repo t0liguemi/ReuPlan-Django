@@ -2,6 +2,8 @@ import { useState, useEffect, useContext } from "react";
 import { Context } from "../store/context";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import "./editEvent.css";
+const backendURL =  import.meta.env.VITE_APP_MODE === "development" ? import.meta.env.VITE_APP_BACKEND_URL : ""
+
 
 function EditEvent() {
   const { eventID } = useParams();
@@ -18,7 +20,7 @@ function EditEvent() {
     actions.createNewInvite(targetUser);
   }
   useEffect(() => {
-    fetch("api/auth", {
+    fetch(backendURL+"api/auth", {
       headers: {
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),
       },
