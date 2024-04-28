@@ -2,6 +2,8 @@ import { useContext } from "react";
 import CalendarSVG from "../resources/Calendarios.svg?react";
 import { Link } from "react-router-dom";
 import { Context } from "../store/context";
+import Grid from "@mui/material/grid";
+
 function Bienvenida() {
   const { store, actions } = useContext(Context);
   return (
@@ -86,7 +88,20 @@ function Bienvenida() {
             </div>
           </div>
           {store.loggedIn ? (
-            <></>
+            <Grid container justifyContent={"center"} className="mx-2 mb-5 mt-5">
+              <Link
+                to="/eventList"
+                className="mx-2 fs-5 py-2 btn btn-primary px-5 fw-semibold mb-2"
+              >
+                Ir a mis eventos
+              </Link>{" "}
+              <Link
+                to="/create#createHeader"
+                className="mx-2 fs-5 py-2 btn btn-success px-5 fw-semibold mb-2"
+              >
+                Crear un nuevo evento
+              </Link>
+            </Grid>
           ) : (
             <div className="row">
               <Link

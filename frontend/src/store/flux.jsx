@@ -8,7 +8,7 @@ const backendURL =
 const getState = ({ getStore, getActions, setStore }) => {
   return {
     store: {
-      modalView:false,
+      modalView: false,
       imprescindibleToggle: true,
       pending: 0,
       generalToast: { state: false, message: "", type: "primary" },
@@ -45,12 +45,12 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
     },
     actions: {
-      modalToggle:(bool)=>{
-        setStore({modalView:bool})
+      modalToggle: (bool) => {
+        setStore({ modalView: bool });
       },
       testBackend: async () => {
         if (import.meta.env.VITE_APP_MODE === "development") {
-          console.log(import.meta.env.VITE_APP_MODE)
+          console.log(import.meta.env.VITE_APP_MODE);
           try {
             const response = await fetch(backendURL + "api/test");
             if (response.status != 200) {
@@ -220,7 +220,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       editEvent: (e, id) => {
         if (e.target[3].value < e.target[2].value) {
           toast.error("El final del evento debe ser posterior a su inicio");
-          return {};
+          return;
         }
         fetch(backendURL + "api/event/create", {
           method: "PATCH",
@@ -278,7 +278,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             if (resp.status === 404) {
               toast.error("Evento no encontrado");
               setStore({ eventFound: false });
-              navigate("/eventList")
+              navigate("/eventList");
               return;
             } else if (resp.status === 429) {
               toast.error(
@@ -303,11 +303,13 @@ const getState = ({ getStore, getActions, setStore }) => {
         const store = getStore();
         store.evento.respuestas = [];
         store.evento.rechazados = [];
-        store.evento.inicio = new Date(
-          store.fetchedEvent.event.inicio + "T03:00:00.000Z"
-        );
-        store.evento.final = new Date(
-          store.fetchedEvent.event.final + "T03:00:00.000Z"
+        store.evento.inicio = new Date(store.fetchedEvent.event.inicio+"T12:00:00");
+        store.evento.final = new Date(store.fetchedEvent.event.final+"T12:00:00");
+        console.log(
+          store.evento.inicio,
+          store.evento.final,
+          store.fetchedEvent.event.inicio,
+          store.fetchedEvent.event.final
         );
         store.evento.idEvento = store.fetchedEvent.event.id;
         store.evento.lugar = store.fetchedEvent.event.lugar;
@@ -923,12 +925,23 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
         const idEvento = localStorage.getItem("reuPlanCurrentEvent");
         const newYear = e.target.fechaNuevoBloque.value.slice(6);
-        const newMonth = e.target.fechaNuevoBloque.value.slice(3,5);
-        const newDay = e.target.fechaNuevoBloque.value.slice(0,2);
+        const newMonth = e.target.fechaNuevoBloque.value.slice(3, 5);
+        const newDay = e.target.fechaNuevoBloque.value.slice(0, 2);
         const newStart = e.target.horaInicioNuevoBloque.value;
         const newEnd = e.target.horaFinalNuevoBloque.value;
         const userID = localStorage.getItem("reuPlanUserID");
-        console.log('y',newYear,'m',newMonth,'d',newDay,'start',newStart,'end',newEnd)
+        console.log(
+          "y",
+          newYear,
+          "m",
+          newMonth,
+          "d",
+          newDay,
+          "start",
+          newStart,
+          "end",
+          newEnd
+        );
         if (newEnd - newStart <= 0) {
           toast.error("La hora final debe ser posterior a la de inicio!");
         } else {

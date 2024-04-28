@@ -10,14 +10,15 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { esES } from "@mui/x-date-pickers/locales";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
-import utc from 'dayjs/plugin/utc'
+import utc from "dayjs/plugin/utc";
+import { ThemeProvider, createTheme, makeStyles } from '@mui/material/styles';
 
 const backendURL =
   import.meta.env.VITE_APP_MODE === "development"
     ? import.meta.env.VITE_APP_BACKEND_URL
     : "";
 
- dayjs.extend(utc);
+dayjs.extend(utc);
 
 const Evento = () => {
   const apiKey = import.meta.env.VITE_APP_API_KEY;
@@ -332,15 +333,22 @@ const Evento = () => {
                     </h5>
                     {store.evento.inicio.toISOString().slice(0, 10) ==
                     store.evento.final.toISOString().slice(0, 10) ? (
-                      <input
-                        name="fechaNuevoBloque"
-                        type="date"
-                        className="form-control fw-semibold"
-                        value={store.evento.inicio.toISOString().slice(0, 10)}
-                        readOnly
-                      ></input>
+                      <LocalizationProvider
+                        dateAdapter={AdapterDayjs}
+                        adapterLocale="es"
+                        localeText={
+                          esES.components.MuiLocalizationProvider.defaultProps
+                            .localeText
+                        }
+                      >
+                        <DatePicker
+                          name="fechaNuevoBloque"
+                          format="DD/MM/YYYY"
+                          value={dayjs.utc(store.evento.inicio.toISOString().slice(0, 10))}
+                          disabled={true}
+                        />
+                      </LocalizationProvider>
                     ) : (
-                      <>
                         <LocalizationProvider
                           dateAdapter={AdapterDayjs}
                           adapterLocale="es"
@@ -361,7 +369,6 @@ const Evento = () => {
                             )}
                           />
                         </LocalizationProvider>
-                      </>
                     )}
                   </div>
                   <div className="d-flex col-sm-3 my-2">
@@ -399,7 +406,7 @@ const Evento = () => {
                     </select>
                   </div>
                   <div className="col-sm-3 d-flex my-2">
-                    <h5 className="col fw-semibold me-2">hasta las</h5>
+                    <h5 className="align-self-center col fw-semibold me-2">hasta las</h5>
                     <select
                       name="horaFinalNuevoBloque"
                       className="form-select form-select-sm col fw-semibold"
