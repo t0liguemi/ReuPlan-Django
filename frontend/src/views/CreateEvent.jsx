@@ -56,8 +56,8 @@ function CreateEvent() {
     return <Navigate to="/login" />;
   } else {
     return (
-      <div className="container py-4">
-        <h4 className="fw-semibold text-body-tertiary">
+      <div className="container py-4" >
+        <h4 className="fw-semibold text-body-tertiary" id="createHeader">
           Primera parte: Detalles del Evento
         </h4>
         <form

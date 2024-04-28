@@ -65,7 +65,7 @@ class Evento(models.Model):
     inicio = models.DateField()
     final = models.DateField()
     duracion = models.IntegerField(null=True)
-    descripcion = models.CharField(max_length=250,null=True)
+    descripcion = models.CharField(max_length=2000,null=True)
     privacidad1 = models.BooleanField(default=False)
     privacidad2 = models.BooleanField(default=False)
     privacidad3 = models.BooleanField(default=False)
