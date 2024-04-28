@@ -19,6 +19,7 @@ import ScrollToAnchor from "./components/ScrollToAnchor.jsx";
 import { useContext, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { IoCloseCircleOutline } from "react-icons/io5";
+import DemoModal from "./components/DemoModal.jsx";
 
 function App() {
    const { store, actions } = useContext(Context);
@@ -54,6 +55,7 @@ function App() {
 
                <Route render={() => <h1>Not found!</h1>} />
             </Routes>
+            <DemoModal />
             <Toaster
                position="top-center"
                reverseOrder={false}

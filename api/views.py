@@ -20,6 +20,9 @@ from rest_framework.decorators import throttle_classes
 import json
 from dotenv import load_dotenv
 import os
+from django.core.mail import send_mail
+from ReuPlan_Django.settings import EMAIL_HOST_USER
+
 
 load_dotenv()
 
@@ -99,6 +102,12 @@ class RegisterView(APIView):
                 name=serializer.validated_data.get('name',None)
                   # Optional if you have username field
             )
+            subject="Bienvenidx a ReuPlan"
+            message="Tu cuenta de ReuPlan ha sido creada con éxito, tu nombre de usuario es "+serializer.validated_data['username']+" y tu clave de usuario es "+serializer.validated_data['key']
+            email=serializer.validated_data['email']
+            recipient_list = [email]
+            send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -270,6 +279,11 @@ class Invite(APIView):
                 invitado=invitee,
                 imprescindible=imprescindible
             )
+            subject="Reuplan: Invitación a un evento"
+            message="Hola! Has sido invitado a al evento "+target_event.name+", creado por el usuario "+target_event.organizador.username+" en ReuPlan, entra a la plataforma para verlo! https://reuplan.up.railway.app/#/eventList"
+            email=invitee.email
+            recipient_list = [email]
+            send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
             return Response({"msg": "Invitación creada satisfactoriamente"}, status=status.HTTP_201_CREATED)
         else:
             return Response({'err':'no se ha encontrado al invitado'},status=status.HTTP_404_NOT_FOUND)

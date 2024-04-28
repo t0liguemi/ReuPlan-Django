@@ -8,6 +8,7 @@ const backendURL =
 const getState = ({ getStore, getActions, setStore }) => {
   return {
     store: {
+      modalView:false,
       imprescindibleToggle: true,
       pending: 0,
       generalToast: { state: false, message: "", type: "primary" },
@@ -44,6 +45,9 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
     },
     actions: {
+      modalToggle:(bool)=>{
+        setStore({modalView:bool})
+      },
       testBackend: async () => {
         if (import.meta.env.VITE_APP_MODE === "development") {
           try {
@@ -273,6 +277,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             if (resp.status === 404) {
               toast.error("Evento no encontrado");
               setStore({ eventFound: false });
+              navigate("/eventList")
               return;
             } else if (resp.status === 429) {
               toast.error(
