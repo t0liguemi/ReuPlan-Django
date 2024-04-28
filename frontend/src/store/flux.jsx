@@ -50,6 +50,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       testBackend: async () => {
         if (import.meta.env.VITE_APP_MODE === "development") {
+          console.log(import.meta.env.VITE_APP_MODE)
           try {
             const response = await fetch(backendURL + "api/test");
             if (response.status != 200) {
