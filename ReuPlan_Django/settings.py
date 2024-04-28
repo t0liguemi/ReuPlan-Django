@@ -159,6 +159,17 @@ REST_FRAMEWORK = {
 
 }
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST ='smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+EMAIL_TIMEOUT = 10
+EMAIL_SSL_CERTFILE = None
+EMAIL_SSL_KEYFILE = None    
+
 CSRF_COOKIE_SAMESITE = 'Strict'
 SESSION_COOKIE_SAMESITE = 'Strict'
 CSRF_COOKIE_HTTPONLY = True
@@ -178,3 +189,4 @@ STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 CSRF_TRUSTED_ORIGINS = ['http://*','https://web-production-17d9.up.railway.app',"https://reuplan.up.railway.app"]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
