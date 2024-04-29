@@ -3,7 +3,6 @@ import React, { useEffect, useState, useContext } from "react";
 import { Context } from "../store/context";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import Tooltip from "@mui/material/Tooltip";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -11,7 +10,11 @@ import { esES } from "@mui/x-date-pickers/locales";
 import dayjs from "dayjs";
 import "dayjs/locale/es";
 import utc from "dayjs/plugin/utc";
-import { ThemeProvider, createTheme, makeStyles } from '@mui/material/styles';
+import Accordion from "react-bootstrap/Accordion";
+import AccordionBody from "react-bootstrap/esm/AccordionBody";
+import AccordionItem from "react-bootstrap/esm/AccordionItem";
+import Popper from "@mui/material/Popper";
+import "./Evento.css";
 
 const backendURL =
   import.meta.env.VITE_APP_MODE === "development"
@@ -34,7 +37,17 @@ const Evento = () => {
     timeZone: "Chile/Continental",
   };
 
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handlePopper = (event) => {
+    setAnchorEl(anchorEl ? null : event.currentTarget);
+  };
+
+  const popperOpen = Boolean(anchorEl);
+  const popperID = popperOpen ? "simple-popper" : undefined;
+
   useEffect(() => {
+    console.log(store);
     store.eventReady = false;
     localStorage.setItem("reuPlanCurrentEvent", eventID);
     fetch(backendURL + "api/auth", {
@@ -133,112 +146,152 @@ const Evento = () => {
           </h4>
         )}
         <div className="py-4">
-          <div className="row">
-            <h3 className="mt-4 fw-semibold">
-              Evento creado por{" "}
-              {store.hostData != undefined && store.hostData.name} (
-              {store.hostData != undefined && store.hostData.username})
-            </h3>
-            <h3 className="fw-semibold">
-              Desde el{" "}
-              {store.evento.inicio.toLocaleDateString("es", dateOptions)} hasta
-              el {store.evento.final.toLocaleDateString("es", dateOptions)}
-            </h3>
-            {/* <h3 className="fw-semibold">
+          <div className="d-flex">
+            <h3 className="align-self-end fw-light me-2">Organiza:</h3>
+            <div
+              className="btn btn-light border rounded fw-semibold fs-4"
+              aria-describedby={popperID}
+              onClick={handlePopper}
+            >
+              {store.hostData.name != undefined && store.hostData.name}
+              {store.hostData.name == undefined && store.hostData.username}
+            </div>
+            <Popper id={popperID} open={popperOpen} anchorEl={anchorEl}>
+              <div className="btn bg-light border rounded fw-normal fs-5">
+                {store.hostData.name != undefined && store.hostData.username}
+                {store.hostData.name != undefined ? <br /> : <></>}
+                {store.hostData != undefined && store.hostData.email}
+              </div>
+            </Popper>
+          </div>
+          {store.evento.lugar &&
+          !store.fetchedEvent.event.mapsQuery === true ? (
+            <>
+              <h3 className="align-self-end fw-light me-2">
+                Lugar:{" "}
+                <span className="fw-semibold text-break">
+                  {store.evento.lugar}
+                </span>
+              </h3>
+            </>
+          ) : (
+            <></>
+          )}
+          <h3 className="fw-semibold">
+            {store.fetchedEvent.event.inicio == store.fetchedEvent.event.final ? (<><span className="align-self-end fw-light me-2">Fecha : El</span>{store.evento.inicio.toLocaleDateString("es", dateOptions)}</>
+            ) : (
+              <>
+                <span className="align-self-end fw-light me-2">
+                  Fecha: Desde el
+                </span>
+                {store.evento.inicio.toLocaleDateString("es", dateOptions)}
+                <span className="align-self-end fw-light me-2"> al</span>
+                {store.evento.final.toLocaleDateString("es", dateOptions)}
+              </>
+            )}
+          </h3>
+
+          {/* <h3 className="fw-semibold">
               Duración: {store.evento.duracion} horas.
             </h3> */}
-            {store.evento.lugar && (
-              <h3 className="fw-semibold text-break">
-                Lugar: {store.evento.lugar}
-              </h3>
-            )}
-            {store.evento.privacidad[0] == true ? (
-              <h3 className="fw-semibold">
-                {store.fetchedEvent.invitaciones.length} invitaciones,{" "}
+
+          {store.evento.privacidad[0] == true ? (
+            <h3 className="fw-semibold my-4">
+              {store.fetchedEvent.invitaciones.length} invitaciones,{" "}
+              <span className="text-success">
                 {store.evento.respondidos.length} aceptada
-                {store.evento.respondidos.length != 1 ? "s" : ""},{" "}
-                {store.fetchedEvent.rechazos.length} rechazada
-                {store.fetchedEvent.rechazos.length != 1 ? "s" : ""}.
-              </h3>
+                {store.evento.respondidos.length != 1 ? "s" : ""}
+              </span>
+              , {store.fetchedEvent.rechazos.length} rechazada
+              {store.fetchedEvent.rechazos.length != 1 ? "s" : ""}.
+            </h3>
+          ) : (
+            <></>
+          )}
+          <div className="row gap-2 my-4">
+            {store.evento.privacidad[1] == true ? (
+              <div className="col">
+                <div className="mb-2">
+                  <span className="fs-3 fw-light me-2">Invitados:</span>
+                </div>
+                <Accordion>
+                  {store.fetchedEvent.invitaciones.map((invitacion, i) => {
+                    return (
+                      <AccordionItem
+                        eventKey={`accordion${i}`}
+                        key={`invited${i}`}
+                      >
+                        <Accordion.Header>
+                          <div className="d-flex justify-content-between w-100">
+                            <span
+                              className={
+                                store.fetchedEvent.respuestas.some(
+                                  (resp) =>
+                                    resp.invitado == invitacion.invitado.id
+                                )
+                                  ? "text-success fw-semibold fs-5"
+                                  : store.fetchedEvent.rechazos.some(
+                                      (rechazo) =>
+                                        rechazo.invitado ==
+                                        invitacion.invitado.id
+                                    )
+                                  ? "text-danger fw-semibold fs-5"
+                                  : "fs-5"
+                              }
+                            >
+                              {invitacion.invitado.name
+                                ? invitacion.invitado.name
+                                : invitacion.invitado.username}
+                            </span>
+                            {store.evento.privacidad[3] &&
+                            invitacion.imprescindible ? (
+                              <span className="me-2 fw-semibold text-dark text-opacity-50">
+                                Imprescindible
+                              </span>
+                            ) : (
+                              ""
+                            )}
+                          </div>
+                        </Accordion.Header>
+                        <AccordionBody className="p-2">
+                          <span className="fs-6 fw-normal">
+                            {invitacion.invitado.name ? (
+                              <>
+                                {invitacion.invitado.username}
+                                <br />
+                              </>
+                            ) : (
+                              ""
+                            )}
+                            {invitacion.invitado.email}
+                          </span>
+                        </AccordionBody>
+                      </AccordionItem>
+                    );
+                  })}
+                </Accordion>
+              </div>
             ) : (
               <></>
             )}
-            <div className="row">
-              <div className="col-sm-6">
-                {store.evento.privacidad[1] == true ? (
-                  <div>
-                    <h3 className="mt-4 fw-semibold">Invitados:</h3>
-                    <ul className="list-group w-75 mx-0 px-0 ">
-                      {store.fetchedEvent.invitaciones.map((invitacion, i) => {
-                        return (
-                          <div key={"invitee" + i}>
-                            <Tooltip
-                              placement="right"
-                              title={
-                                <React.Fragment>
-                                  <span className="fs-6 fw-normal">
-                                    {invitacion.invitado.name ? (
-                                      <>
-                                        {invitacion.invitado.username}
-                                        <br />
-                                      </>
-                                    ) : (
-                                      ""
-                                    )}
-                                    {invitacion.invitado.email}
-                                  </span>
-                                </React.Fragment>
-                              }
-                            >
-                              <li
-                                className={
-                                  store.fetchedEvent.respuestas.some(
-                                    (resp) =>
-                                      resp.invitado == invitacion.invitado.id
-                                  )
-                                    ? "text-success list-group-item list-group-item-action fs-5"
-                                    : store.fetchedEvent.rechazos.some(
-                                        (rechazo) =>
-                                          rechazo.invitado ==
-                                          invitacion.invitado.id
-                                      )
-                                    ? "text-danger list-group-item list-group-item-action fs-5"
-                                    : "list-group-item list-group-item-action fs-5"
-                                }
-                              >
-                                {invitacion.invitado.name
-                                  ? invitacion.invitado.name
-                                  : invitacion.invitado.username}
-                                {store.evento.privacidad[3] ? (
-                                  invitacion.imprescindible ? (
-                                    <span className="fw-light text-dark text-opacity-50 float-end">
-                                      Imprescindible
-                                    </span>
-                                  ) : (
-                                    ""
-                                  )
-                                ) : (
-                                  ""
-                                )}
-                              </li>
-                            </Tooltip>
-                          </div>
-                        );
-                      })}
-                    </ul>
-                  </div>
-                ) : (
-                  <></>
-                )}
-                <p className="mt-4 fs-4 fw-semibold">
-                  {store.evento.descripcion}
-                </p>
-              </div>
+
+            <div className="col d-flex flex-column justify-content-start align-items-start">
+              {store.evento.lugar &&
+              store.fetchedEvent.event.mapsQuery === true ? (
+                <span className="mb-2 fs-3 fw-light text-break">
+                  Lugar:{" "}
+                  <span className="fs-3 fw-semibold my-4">
+                    {store.evento.lugar}
+                  </span>
+                </span>
+              ) : (
+                <></>
+              )}
               {store.evento.lugar &&
               store.fetchedEvent.event.mapsQuery === true ? (
                 <iframe
-                  className="col-sm-6 my-4 px-4"
-                  width="400"
+                  className="px-2"
+                  width="800"
                   height="450"
                   style={{ border: 0 }}
                   loading="lazy"
@@ -253,6 +306,7 @@ const Evento = () => {
               )}
             </div>
           </div>
+          <p className="mt-4 fs-5 fw-normal">{store.evento.descripcion}</p>
         </div>
         <h2 className="fw-semibold">Resultados de encuesta</h2>
         <Calendar />
@@ -301,7 +355,10 @@ const Evento = () => {
               <button
                 className="btn btn-primary px-4 fw-semibold"
                 onClick={() =>
-                  actions.createNewInvite(localStorage.getItem("reuPlanUser"))
+                  actions.createNewInvite(
+                    localStorage.getItem("reuPlanUser"),
+                    navigate
+                  )
                 }
               >
                 Participar del evento
@@ -315,12 +372,11 @@ const Evento = () => {
               }}
             >
               <h2 className="mb-4 fw-semibold">Tu Respuesta:</h2>
-              <div className="my-4">
+              <div className="mt-4 mb-1">
                 <h4 className="fw-semibold">
                   Agregar bloques de disponibilidad:
                 </h4>
-                <br />
-                <small>
+                <small className="mb-3">
                   Tus respuestas se intersectarán con los demas asistentes,
                   agrega libremente todos los horarios en que tu puedas asistir,
                   el calendario se preocupará de combinar los otros horarios con
@@ -344,31 +400,33 @@ const Evento = () => {
                         <DatePicker
                           name="fechaNuevoBloque"
                           format="DD/MM/YYYY"
-                          value={dayjs.utc(store.evento.inicio.toISOString().slice(0, 10))}
+                          value={dayjs.utc(
+                            store.evento.inicio.toISOString().slice(0, 10)
+                          )}
                           disabled={true}
                         />
                       </LocalizationProvider>
                     ) : (
-                        <LocalizationProvider
-                          dateAdapter={AdapterDayjs}
-                          adapterLocale="es"
-                          localeText={
-                            esES.components.MuiLocalizationProvider.defaultProps
-                              .localeText
-                          }
-                        >
-                          <DatePicker
-                            name="fechaNuevoBloque"
-                            format="DD/MM/YYYY"
-                            defaultValue={dayjs()}
-                            minDate={dayjs.utc(
-                              store.evento.inicio.toISOString().slice(0, 10)
-                            )}
-                            maxDate={dayjs.utc(
-                              store.evento.final.toISOString().slice(0, 10)
-                            )}
-                          />
-                        </LocalizationProvider>
+                      <LocalizationProvider
+                        dateAdapter={AdapterDayjs}
+                        adapterLocale="es"
+                        localeText={
+                          esES.components.MuiLocalizationProvider.defaultProps
+                            .localeText
+                        }
+                      >
+                        <DatePicker
+                          name="fechaNuevoBloque"
+                          format="DD/MM/YYYY"
+                          defaultValue={dayjs()}
+                          minDate={dayjs.utc(
+                            store.evento.inicio.toISOString().slice(0, 10)
+                          )}
+                          maxDate={dayjs.utc(
+                            store.evento.final.toISOString().slice(0, 10)
+                          )}
+                        />
+                      </LocalizationProvider>
                     )}
                   </div>
                   <div className="d-flex col-sm-3 my-2">
@@ -406,7 +464,9 @@ const Evento = () => {
                     </select>
                   </div>
                   <div className="col-sm-3 d-flex my-2">
-                    <h5 className="align-self-center col fw-semibold me-2">hasta las</h5>
+                    <h5 className="align-self-center col fw-semibold me-2">
+                      hasta las
+                    </h5>
                     <select
                       name="horaFinalNuevoBloque"
                       className="form-select form-select-sm col fw-semibold"
@@ -447,41 +507,44 @@ const Evento = () => {
             </form>
           )}
           <div className="my-3">
-            {store.bloquesUsuarioActual.length > 0 ? (
-              <h4 className="fw-semibold">Tus bloques:</h4>
+            {store.bloquesUsuarioActual.length > 0 &&
+            store.evento.invitados.some(
+              (id) => id == localStorage.getItem("reuPlanUserID")
+            ) ? (
+              <>
+                <h4 className="fw-semibold">Tus bloques:</h4>
+                {store.bloquesUsuarioActual.map((horario, i) => {
+                  return (
+                    <div
+                      className="row align-items-baseline"
+                      key={"disponibilidad" + i}
+                    >
+                      <h5 className="fw-semibold col-5">
+                        {horario[0]
+                          .toLocaleDateString("es", dateOptions)
+                          .charAt(0)
+                          .toUpperCase() +
+                          horario[0]
+                            .toLocaleDateString("es", dateOptions)
+                            .slice(1)}
+                        : {horario[1][0] / 100}:00 - {horario[1][1] / 100}:00
+                      </h5>
+                      <button
+                        className="btn col-1 fs-5 fw-bold text-danger"
+                        onClick={() => {
+                          actions.deleteAvailability(horario[2], navigate);
+                        }}
+                      >
+                        X
+                      </button>
+                      <div className="col-5"></div>
+                    </div>
+                  );
+                })}
+              </>
             ) : (
               <></>
             )}
-            {store.bloquesUsuarioActual != [] &&
-              store.bloquesUsuarioActual.map((horario, i) => {
-                return (
-                  <div
-                    className="row align-items-baseline"
-                    key={"disponibilidad" + i}
-                  >
-                    <h5 className="fw-semibold col-5">
-                      {horario[0]
-                        .toLocaleDateString("es", dateOptions)
-                        .charAt(0)
-                        .toUpperCase() +
-                        horario[0]
-                          .toLocaleDateString("es", dateOptions)
-                          .slice(1)}
-                      : {horario[1][0] / 100}:00 - {horario[1][1] / 100}:00
-                    </h5>
-
-                    <button
-                      className="btn col-1 fs-5 fw-bold text-danger"
-                      onClick={() => {
-                        actions.deleteAvailability(horario[2], navigate);
-                      }}
-                    >
-                      X
-                    </button>
-                    <div className="col-5"></div>
-                  </div>
-                );
-              })}
           </div>
         </div>
       </div>

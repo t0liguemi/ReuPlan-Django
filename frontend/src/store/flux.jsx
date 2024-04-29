@@ -305,12 +305,6 @@ const getState = ({ getStore, getActions, setStore }) => {
         store.evento.rechazados = [];
         store.evento.inicio = new Date(store.fetchedEvent.event.inicio+"T12:00:00");
         store.evento.final = new Date(store.fetchedEvent.event.final+"T12:00:00");
-        console.log(
-          store.evento.inicio,
-          store.evento.final,
-          store.fetchedEvent.event.inicio,
-          store.fetchedEvent.event.final
-        );
         store.evento.idEvento = store.fetchedEvent.event.id;
         store.evento.lugar = store.fetchedEvent.event.lugar;
         store.evento.duracion = store.fetchedEvent.event.duracion;
@@ -541,7 +535,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((data) => {})
           .catch((error) => {});
       },
-      createNewInvite: (inviteeID, setUsuarioExiste) => {
+      createNewInvite: (inviteeID, navigate) => {
         const actions = getActions();
         fetch(backendURL + "api/invite", {
           method: "POST",
@@ -564,6 +558,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             } else if (resp.status == 201) {
               toast.success("Usuario invitado exitosamente");
               actions.getEvent(localStorage.getItem("reuPlanCurrentEvent"));
+              actions.mainEventView(localStorage.getItem("reuPlanCurrentEvent"),navigate)
               return resp.json();
             } else if (resp.status == 409) {
               toast.error("Usuario ya invitado");
@@ -930,18 +925,6 @@ const getState = ({ getStore, getActions, setStore }) => {
         const newStart = e.target.horaInicioNuevoBloque.value;
         const newEnd = e.target.horaFinalNuevoBloque.value;
         const userID = localStorage.getItem("reuPlanUserID");
-        console.log(
-          "y",
-          newYear,
-          "m",
-          newMonth,
-          "d",
-          newDay,
-          "start",
-          newStart,
-          "end",
-          newEnd
-        );
         if (newEnd - newStart <= 0) {
           toast.error("La hora final debe ser posterior a la de inicio!");
         } else {
