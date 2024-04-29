@@ -280,7 +280,7 @@ class Invite(APIView):
                 imprescindible=imprescindible
             )
             subject="Reuplan: Invitación a un evento"
-            message="Hola! Has sido invitado a al evento "+target_event.name+", creado por el usuario "+target_event.organizador.username+" en ReuPlan, entra a la plataforma para verlo! https://reuplan.up.railway.app/#/eventList"
+            message="Hola! Has sido invitado a al evento "+target_event.name+", creado por el usuario "+target_event.organizador.username+" en ReuPlan, entra a la plataforma para verlo! https://reuplan.up.railway.app/#/event/"+str(target_event.id)
             email=invitee.email
             recipient_list = [email]
             send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
