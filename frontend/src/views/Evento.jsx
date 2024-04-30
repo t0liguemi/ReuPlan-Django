@@ -24,11 +24,17 @@ const backendURL =
 dayjs.extend(utc);
 
 const Evento = () => {
+  const { store, actions } = useContext(Context);
+  const { eventID } = useParams();
+  const currentUser = localStorage.getItem("reuPlanUserID");
+  const [mapWidth, setMapwidth] = useState(window.innerWidth > 991 ? window.innerWidth*0.45+100 : window.innerWidth*0.8);
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const popperOpen = Boolean(anchorEl);
   const apiKey = import.meta.env.VITE_APP_API_KEY;
   const navigate = useNavigate();
-  const { eventID } = useParams();
-  const { store, actions } = useContext(Context);
-  const currentUser = localStorage.getItem("reuPlanUserID");
+  const popperID = popperOpen ? "simple-popper" : undefined;
+
   const dateOptions = {
     weekday: "long",
     year: "numeric",
@@ -37,17 +43,20 @@ const Evento = () => {
     timeZone: "Chile/Continental",
   };
 
-  const [anchorEl, setAnchorEl] = useState(null);
-
+  const handleResize = () => {
+    console.log(window.innerWidth);
+    setMapwidth(window.innerWidth > 991 ? window.innerWidth*0.45 +100 : window.innerWidth*0.8);
+  };
+  
   const handlePopper = (event) => {
     setAnchorEl(anchorEl ? null : event.currentTarget);
   };
 
-  const popperOpen = Boolean(anchorEl);
-  const popperID = popperOpen ? "simple-popper" : undefined;
+
+
 
   useEffect(() => {
-    console.log(store);
+    window.addEventListener("resize", handleResize);
     store.eventReady = false;
     localStorage.setItem("reuPlanCurrentEvent", eventID);
     fetch(backendURL + "api/auth", {
@@ -208,7 +217,7 @@ const Evento = () => {
           ) : (
             <></>
           )}
-          <div className="row gap-2 my-4">
+          <div className="d-flex gap-2 my-4 flex-wrap">
             {store.evento.privacidad[1] == true ? (
               <div className="col">
                 <div className="mb-2">
@@ -245,7 +254,7 @@ const Evento = () => {
                             </span>
                             {store.evento.privacidad[3] &&
                             invitacion.imprescindible ? (
-                              <span className="me-2 fw-semibold text-dark text-opacity-50">
+                              <span className="mx-2 fw-semibold text-dark text-opacity-50">
                                 Imprescindible
                               </span>
                             ) : (
@@ -275,7 +284,7 @@ const Evento = () => {
               <></>
             )}
 
-            <div className="col d-flex flex-column justify-content-start align-items-start">
+            <div className="d-flex flex-column">
               {store.evento.lugar &&
               store.fetchedEvent.event.mapsQuery === true ? (
                 <span className="mb-2 fs-3 fw-light text-break">
@@ -290,8 +299,8 @@ const Evento = () => {
               {store.evento.lugar &&
               store.fetchedEvent.event.mapsQuery === true ? (
                 <iframe
-                  className="px-2"
-                  width="800"
+                  className="align-self-center"
+                  width={`${mapWidth}`}
                   height="450"
                   style={{ border: 0 }}
                   loading="lazy"
