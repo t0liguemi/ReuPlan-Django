@@ -3,23 +3,19 @@ import { Context } from "../store/context";
 import { useNavigate } from "react-router";
 import toast from "react-hot-toast";
 
-
 const Profile = () => {
   const { store, actions } = useContext(Context);
   const currentUser = localStorage.getItem("reuPlanUserID");
   const navigate = useNavigate();
 
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(e)
+    console.log(e);
 
-    if (e.target[2].value!=e.target[4].value){
-      toast.error("Las contraseñas no coinciden")
-      return
-    }
-    if (e.target[2].value.length<10 || e.target[4].value.length<10){
-      toast.error("La contraseña debe tener al menos 10 caracteres")
-      return
+    if (e.target[2].value != e.target[4].value) {
+      toast.error("Las contraseñas no coinciden");
+      return;
     }
     actions.editUser(e, navigate);
   };
@@ -27,7 +23,7 @@ const Profile = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
-    actions.getSession()
+    actions.getSession();
     const fetchData = async () => {
       try {
         setDataLoaded(false);
@@ -41,9 +37,8 @@ const Profile = () => {
 
     if (currentUser) {
       fetchData();
-    }
-    else if (!store.loggedIn){
-      navigate("/login")
+    } else if (!store.loggedIn) {
+      navigate("/login");
     }
     return () => {
       actions.resetUserInfo();
@@ -52,7 +47,8 @@ const Profile = () => {
   }, [currentUser, dataLoaded]);
 
   return (
-    (store.loggedIn && store.currentUserInfo != undefined) && (
+    store.loggedIn &&
+    store.currentUserInfo != undefined && (
       <div className="container py-3">
         <div>
           <h1 className="fw-semibold">Editar perfil</h1>
@@ -97,7 +93,13 @@ const Profile = () => {
                     ></input>
                   </div>
                   <div className="col">
-                    <label className="fw-semibold">Confirmar contraseña<small className="ms-4 fw-normal">Un cambio en la contraseña requerirá volver a iniciar sesión</small></label>
+                    <label className="fw-semibold">
+                      Confirmar contraseña
+                      <small className="ms-4 fw-normal">
+                        Un cambio en la contraseña requerirá volver a iniciar
+                        sesión
+                      </small>
+                    </label>
                     <input
                       id="formPassword2"
                       type="password"
@@ -119,7 +121,6 @@ const Profile = () => {
                   </div>
                 </div>
                 <div className="row gap-5 my-4">
-
                   <div className="col">
                     <label className="col fw-semibold">
                       Tu código de tester

@@ -148,6 +148,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => {});
       },
       editUser: (e, navigate) => {
+        const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]{10,}$/;
         const store = getStore();
         e.preventDefault();
         const actions = getActions();
@@ -158,6 +159,12 @@ const getState = ({ getStore, getActions, setStore }) => {
         };
         if (answers.password === "") {
           delete answers.password;
+        }
+        if (!passwordPattern.test(answers.password) && answers.password) {
+          toast.error(
+            "La contraseña debe tener al menos 10 caracteres y contener al menos una letra mayúscula, un símbolo y un número."
+          );
+          return;
         }
         if (
           answers.password === undefined &&
