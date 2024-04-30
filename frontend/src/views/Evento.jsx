@@ -427,7 +427,9 @@ const Evento = () => {
                         <DatePicker
                           name="fechaNuevoBloque"
                           format="DD/MM/YYYY"
-                          defaultValue={dayjs()}
+                          defaultValue={dayjs.utc(
+                            store.evento.inicio.toISOString().slice(0, 10)
+                          )}
                           minDate={dayjs.utc(
                             store.evento.inicio.toISOString().slice(0, 10)
                           )}
