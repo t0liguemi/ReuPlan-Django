@@ -1,7 +1,7 @@
 import toast from "react-hot-toast";
 
 const backendURL =
-  import.meta.env.VITE_APP_MODE === "development"
+  import.meta.env.DEV
     ? import.meta.env.VITE_APP_BACKEND_URL
     : "";
 
@@ -49,8 +49,8 @@ const getState = ({ getStore, getActions, setStore }) => {
         setStore({ modalView: bool });
       },
       testBackend: async () => {
-        if (import.meta.env.VITE_APP_MODE === "development") {
-          console.log(import.meta.env.VITE_APP_MODE);
+        if (import.meta.env.DEV) {
+          console.log(import.meta.env.DEV);
           try {
             const response = await fetch(backendURL + "api/test");
             if (response.status != 200) {
@@ -829,11 +829,11 @@ const getState = ({ getStore, getActions, setStore }) => {
             .then((data) => {
               if (data.error) {
                 toast.error("Código inválido o expirado");
-              }
-              if (data.email) {
+              }else
+              if (data.error && data.email) {
                 toast.error("Email inválido o en uso");
-              }
-              if (data.username) {
+              }else
+              if (data.error && data.username) {
                 toast.error("Nombre de usuario ya en uso");
               }
             })
