@@ -178,7 +178,7 @@ const Evento = () => {
             <></>
           )}
           <h3 className="fw-semibold">
-            {store.fetchedEvent.event.inicio == store.fetchedEvent.event.final ? (<><span className="align-self-end fw-light me-2">Fecha : El</span>{store.evento.inicio.toLocaleDateString("es", dateOptions)}</>
+            {store.fetchedEvent.event.inicio == store.fetchedEvent.event.final ? (<><span className="align-self-end fw-light me-2">Fecha : El</span>{store.evento.inicio.toLocaleDateString("es", dateOptions)}.</>
             ) : (
               <>
                 <span className="align-self-end fw-light me-2">
@@ -186,7 +186,7 @@ const Evento = () => {
                 </span>
                 {store.evento.inicio.toLocaleDateString("es", dateOptions)}
                 <span className="align-self-end fw-light me-2"> al</span>
-                {store.evento.final.toLocaleDateString("es", dateOptions)}
+                {store.evento.final.toLocaleDateString("es", dateOptions)}.
               </>
             )}
           </h3>
