@@ -44,7 +44,6 @@ const Evento = () => {
   };
 
   const handleResize = () => {
-    console.log(window.innerWidth);
     setMapwidth(window.innerWidth > 991 ? window.innerWidth*0.45 +100 : window.innerWidth*0.8);
   };
   
