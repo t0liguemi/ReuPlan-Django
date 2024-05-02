@@ -135,7 +135,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = ["https://reuplan.up.railway.app"]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -186,7 +186,7 @@ SESSION_COOKIE_HTTPONLY = True
 STATICFILES_DIRS = [BASE_DIR.joinpath('frontend','dist','assets')]
 STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 
-CSRF_TRUSTED_ORIGINS = ['http://*','https://web-production-17d9.up.railway.app',"https://reuplan.up.railway.app"]
+CSRF_TRUSTED_ORIGINS = ["https://reuplan.up.railway.app"]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

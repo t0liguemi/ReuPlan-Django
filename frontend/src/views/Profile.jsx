@@ -11,7 +11,6 @@ const Profile = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(e);
 
     if (e.target[2].value != e.target[4].value) {
       toast.error("Las contraseñas no coinciden");
