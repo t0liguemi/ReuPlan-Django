@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { Context } from "../store/context";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import "./editEvent.css";
-const backendURL =  import.meta.env.VITE_APP_MODE === "development" ? import.meta.env.VITE_APP_BACKEND_URL : ""
+const backendURL =  import.meta.env.DEV ? import.meta.env.VITE_APP_BACKEND_URL : ""
 
 
 function EditEvent() {

@@ -50,7 +50,6 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       testBackend: async () => {
         if (import.meta.env.DEV) {
-          console.log(import.meta.env.DEV);
           try {
             const response = await fetch(backendURL + "api/test");
             if (response.status != 200) {

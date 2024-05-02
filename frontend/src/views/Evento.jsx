@@ -13,13 +13,13 @@ import utc from "dayjs/plugin/utc";
 import Accordion from "react-bootstrap/Accordion";
 import AccordionBody from "react-bootstrap/esm/AccordionBody";
 import AccordionItem from "react-bootstrap/esm/AccordionItem";
-import Popper from "@mui/material/Popper";
+import Box from "@mui/material/Box";
 import "./Evento.css";
+import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 
-const backendURL =
-  import.meta.env.VITE_APP_MODE === "development"
-    ? import.meta.env.VITE_APP_BACKEND_URL
-    : "";
+const backendURL = import.meta.env.DEV
+  ? import.meta.env.VITE_APP_BACKEND_URL
+  : "";
 
 dayjs.extend(utc);
 
@@ -27,10 +27,13 @@ const Evento = () => {
   const { store, actions } = useContext(Context);
   const { eventID } = useParams();
   const currentUser = localStorage.getItem("reuPlanUserID");
-  const [mapWidth, setMapwidth] = useState(window.innerWidth > 991 ? window.innerWidth*0.45+100 : window.innerWidth*0.8);
-  const [anchorEl, setAnchorEl] = useState(null);
+  const [mapWidth, setMapwidth] = useState(
+    window.innerWidth > 991
+      ? window.innerWidth * 0.45 + 100
+      : window.innerWidth * 0.8
+  );
 
-  const popperOpen = Boolean(anchorEl);
+  const [popperOpen, setPopperOpen] = useState(false);
   const apiKey = import.meta.env.VITE_APP_API_KEY;
   const navigate = useNavigate();
   const popperID = popperOpen ? "simple-popper" : undefined;
@@ -43,16 +46,29 @@ const Evento = () => {
     timeZone: "Chile/Continental",
   };
 
+  const popperStyles = {
+    position: "absolute",
+    top: 40,
+    right: 0,
+    left: 0,
+    zIndex: 1,
+  };
+
   const handleResize = () => {
-    setMapwidth(window.innerWidth > 991 ? window.innerWidth*0.45 +100 : window.innerWidth*0.8);
+    setMapwidth(
+      window.innerWidth > 991
+        ? window.innerWidth * 0.45 + 100
+        : window.innerWidth * 0.8
+    );
   };
-  
-  const handlePopper = (event) => {
-    setAnchorEl(anchorEl ? null : event.currentTarget);
+
+  const handlePopper = () => {
+    setPopperOpen(!popperOpen);
   };
 
-
-
+  const handlePopperAway = () => {
+    setPopperOpen(false);
+  };
 
   useEffect(() => {
     window.addEventListener("resize", handleResize);
@@ -92,7 +108,7 @@ const Evento = () => {
     return (
       <div className="container py-5">
         <div className="d-flex justify-content-between">
-          <h1 className="fw-semibold">Evento: {store.evento.nombre}</h1>
+          <h1 className="fw-semibold"><span className="fw-light">Evento:</span> {store.evento.nombre}</h1>
           <div className="d-grid gap-2 d-sm-block align-self-center">
             <Link
               className="btn btn-success fw-semibold px-4 py-2 fs-5 mx-3"
@@ -156,21 +172,28 @@ const Evento = () => {
         <div className="py-4">
           <div className="d-flex">
             <h3 className="align-self-end fw-light me-2">Organiza:</h3>
-            <div
-              className="btn btn-light border rounded fw-semibold fs-4"
-              aria-describedby={popperID}
-              onClick={handlePopper}
-            >
-              {store.hostData.name != undefined && store.hostData.name}
-              {store.hostData.name == undefined && store.hostData.username}
-            </div>
-            <Popper id={popperID} open={popperOpen} anchorEl={anchorEl}>
-              <div className="btn bg-light border rounded fw-normal fs-5">
-                {store.hostData.name != undefined && store.hostData.username}
-                {store.hostData.name != undefined ? <br /> : <></>}
-                {store.hostData != undefined && store.hostData.email}
-              </div>
-            </Popper>
+            <ClickAwayListener onClickAway={handlePopperAway}>
+                <Box sx={{ position: "relative" }}>
+                  <div
+                    className="btn btn-light border rounded fw-semibold fs-4 py-0"
+                    onClick={handlePopper}
+                  >
+                    {store.hostData.name != undefined && store.hostData.name}
+                    {store.hostData.name == undefined &&
+                      store.hostData.username}
+                  </div>
+                  {popperOpen ? (
+                    <Box sx={popperStyles}>
+                      <div className="btn bg-light border rounded fw-normal fs-5">
+                        {store.hostData.name != undefined &&
+                          store.hostData.username}
+                        {store.hostData.name != undefined ? <br /> : <></>}
+                        {store.hostData != undefined && store.hostData.email}
+                      </div>
+                    </Box>
+                  ) : null}
+                </Box>
+            </ClickAwayListener>
           </div>
           {store.evento.lugar &&
           !store.fetchedEvent.event.mapsQuery === true ? (
@@ -186,7 +209,12 @@ const Evento = () => {
             <></>
           )}
           <h3 className="fw-semibold">
-            {store.fetchedEvent.event.inicio == store.fetchedEvent.event.final ? (<><span className="align-self-end fw-light me-2">Fecha : El</span>{store.evento.inicio.toLocaleDateString("es", dateOptions)}.</>
+            {store.fetchedEvent.event.inicio ==
+            store.fetchedEvent.event.final ? (
+              <>
+                <span className="align-self-end fw-light me-2">Fecha : El</span>
+                {store.evento.inicio.toLocaleDateString("es", dateOptions)}.
+              </>
             ) : (
               <>
                 <span className="align-self-end fw-light me-2">
@@ -385,7 +413,7 @@ const Evento = () => {
                   Agregar bloques de disponibilidad:
                 </h4>
                 <small className="mb-3">
-                  Tus respuestas se intersectarán con los demas asistentes,
+                  Tus respuestas se intersectarán con las de los otros asistentes,
                   agrega libremente todos los horarios en que tu puedas asistir,
                   el calendario se preocupará de combinar los otros horarios con
                   los tuyos.

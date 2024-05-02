@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 
 
 const EventList = () => {
-  const backendURL =  import.meta.env.VITE_APP_MODE === "development" ? import.meta.env.VITE_APP_BACKEND_URL : ""
+  const backendURL =  import.meta.env.DEV ? import.meta.env.VITE_APP_BACKEND_URL : ""
 
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
