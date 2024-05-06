@@ -135,7 +135,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+os.getenv("CORS_ORIGINS")
+
 CORS_ALLOWED_ORIGINS = ["https://reuplan.up.railway.app","https://www.reuplan.lol","https://reuplan.lol"]
+print(CORS_ALLOWED_ORIGINS)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
