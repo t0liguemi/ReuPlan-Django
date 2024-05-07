@@ -38,7 +38,7 @@ if __name__ == "__main__":
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.getenv("WORKING_MODE")is "development":
+if os.getenv("WORKING_MODE") == "development":
     DEBUG = True
 else:
     DEBUG = False
@@ -142,11 +142,12 @@ STATIC_URL = "static/"
 imported_cors_from_env = os.getenv("CORS_ORIGINS")
 parsed_cors_from_env = [origin.strip() for origin in imported_cors_from_env.split(',') if origin.strip()]
 
-if os.getenv("WORKING_MODE") is "development":
+if os.getenv("WORKING_MODE") == "development":
     CORS_ALLOW_ALL_ORIGINS = True
-    print("DEV MODE ON")
+    print("DEVELOPMENT MODE ON")
 else:
     CORS_ALLOWED_ORIGINS = parsed_cors_from_env
+    print("PRODUCTION MODE ON")
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
