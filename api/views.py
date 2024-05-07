@@ -455,7 +455,7 @@ class CreateRecoveryKey(APIView):
         key = generate_random_string()
         RecoveryKey.objects.create(key=key,user=user)
         subject="Reuplan: Recuperación de contraseña"
-        message="Hola! Solicitaste un cambio de contraseña en ReuPlan para la cuenta asociada a este correo, entra a la plataforma para verlo! https://www.reuplan.lol/#/recovery/user/"+str(user.id)+" e ingresa el código "+str(key)+".\n\nSi no has solicitado este cambio, ignora este correo."
+        message="Hola! Solicitaste un cambio de contraseña en ReuPlan para la cuenta asociada a este correo. Ingresa el código "+str(key)+".\n\nSi no has solicitado este cambio, ignora este correo."
         email=user.email
         recipient_list = [email]
         send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
@@ -466,7 +466,7 @@ class RecoveryAttempt(APIView):
     serializer_class = RecoveryKeySerializer
     def post (self,request):
         entered_key = request.data.get('key')
-        user = User.objects.filter(pk=request.data.get('user')).first()
+        user = User.objects.filter(username=request.data.get('username')).first()
         expected_key = RecoveryKey.objects.filter(user=user).first()
         if expected_key is None: # User enters a key before the key has been created
             return Response({'error':'Wrong Key'},status=status.HTTP_404_NOT_FOUND) #message returns error to hide the fact that the key has not been created yet
