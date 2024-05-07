@@ -1,25 +1,24 @@
 import { toast } from "react-hot-toast";
 function Contact() {
-
   const backendURL = import.meta.env.DEV
     ? import.meta.env.VITE_APP_BACKEND_URL
     : "";
-    
+
   function handleSubmit(event) {
     console.log(
       event.target.username.value,
       event.target.email.value,
       event.target.message.value
     );
-    fetch(backendURL + "/contact", {
+    fetch(backendURL + "api/contact", {
+      method: "POST",
       headers: {
-        method: "POST",
         "Content-type": "application/json",
       },
       body: JSON.stringify({
         email: event.target.email.value,
-        username: event.target.username.value,
-        message: event.target.message,
+        name: event.target.username.value,
+        message: event.target.message.value,
       }),
     }).then((response) => {
       if (response.status === 200) {
