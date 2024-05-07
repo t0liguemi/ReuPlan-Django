@@ -24,6 +24,7 @@ from django.core.mail import send_mail
 from ReuPlan_Django.settings import EMAIL_HOST_USER
 import datetime
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 load_dotenv()
@@ -444,6 +445,9 @@ def ClearEventos(request):
 @throttle_classes([AnonRateThrottle])
 class CreateRecoveryKey(APIView):
     serializer_class = RecoveryKeySerializer
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     def post(self, request):
         existing_keys = RecoveryKey.objects.filter(user=request.data.get('user')).first()
         user = User.objects.filter(pk=request.data.get('user')).first()
@@ -461,6 +465,9 @@ class CreateRecoveryKey(APIView):
 @throttle_classes([AnonRateThrottle])
 class RecoveryAttempt(APIView):
     serializer_class = RecoveryKeySerializer
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     def post (self,request):
         entered_key = request.data.get('key')
         user = User.objects.filter(pk=request.data.get('user')).first()
@@ -497,7 +504,7 @@ def Contact(request):
     return Response({'message':'Email sent succesfully'},status=status.HTTP_200_OK)
 
 @throttle_classes([AnonRateThrottle])
-@require_POST
+@csrf_exempt
 @api_view(["POST"])
 def EmailUsername(request):
     requested_email=request.data.get('email')
