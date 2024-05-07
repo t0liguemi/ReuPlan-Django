@@ -38,7 +38,11 @@ if __name__ == "__main__":
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+if os.getenv("WORKING_MODE")is "development":
+    DEBUG = True
+else:
+    DEBUG = False
+
 
 ALLOWED_HOSTS = ['*']
 
@@ -138,7 +142,7 @@ STATIC_URL = "static/"
 imported_cors_from_env = os.getenv("CORS_ORIGINS")
 parsed_cors_from_env = [origin.strip() for origin in imported_cors_from_env.split(',') if origin.strip()]
 
-if os.getenv("MODE") is "development":
+if os.getenv("WORKING_MODE") is "development":
     CORS_ALLOW_ALL_ORIGINS = True
     print("DEV MODE ON")
 else:
