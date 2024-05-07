@@ -49,7 +49,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         setStore({ modalView: bool });
       },
       testBackend: async () => {
-        if (import.meta.env.DEV) {
+        if (import.meta.env.DEV) {  
           try {
             const response = await fetch(backendURL + "api/test");
             if (response.status != 200) {
