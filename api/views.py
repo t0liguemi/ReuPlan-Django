@@ -446,8 +446,10 @@ def ClearEventos(request):
 class CreateRecoveryKey(APIView):
     serializer_class = RecoveryKeySerializer
     def post(self, request):
-        existing_keys = RecoveryKey.objects.filter(user=request.data.get('user')).first()
         user = User.objects.filter(username=request.data.get('user')).first()
+        if user is None:
+            return Response({'error':'User not found'},status=status.HTTP_404_NOT_FOUND)
+        existing_keys = RecoveryKey.objects.filter(user=user).first()
         if existing_keys:
             existing_keys.delete()
         key = generate_random_string()
