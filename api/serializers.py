@@ -9,7 +9,6 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        
         fields = ['id', 'username', 'email', 'name', 'key','password']
 
 class EventoSerializer(serializers.ModelSerializer):
@@ -48,3 +47,8 @@ class RechazadoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Rechazado
         fields = ['id', 'evento', 'invitado']
+
+class RecoveryKeySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RecoveryKey
+        fields = ['id', 'key', 'user', 'created']

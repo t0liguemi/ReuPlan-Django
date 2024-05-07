@@ -198,7 +198,10 @@ SESSION_COOKIE_HTTPONLY = True
 STATICFILES_DIRS = [BASE_DIR.joinpath('frontend','dist','assets')]
 STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 
-CSRF_TRUSTED_ORIGINS = ["https://reuplan.up.railway.app","https://www.reuplan.lol","https://reuplan.lol"]
+if os.getenv("WORKING_MODE") == "development":
+    CSRF_TRUSTED_ORIGINS = []
+else:
+    CSRF_TRUSTED_ORIGINS = ["https://reuplan.up.railway.app","https://www.reuplan.lol","https://reuplan.lol"]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

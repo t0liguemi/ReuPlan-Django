@@ -30,22 +30,22 @@ function Login() {
           <div className="form-floating">
             <input
               type="text"
-              className="form-control m-2 py-2 fw-semibold text-center"
+              className="form-control m-2 fw-semibold"
               id="floatingInput"
               placeholder="nombre de usuario"
             />
-            <label htmlFor="floatingPassowrd" className="">
+            <label htmlFor="floatingInput" className="">
               Nombre de usuario
             </label>
           </div>
           <div className="form-floating">
             <input
               type="password"
-              className="form-control text-center m-2"
+              className="form-control m-2"
               id="floatingPassword"
               placeholder="Password"
             />
-            <label>Contraseña</label>
+            <label htmlFor="floatingPassword">Contraseña</label>
           </div>
           <button
             className="btn btn-primary w-100 m-2 py-2 fw-semibold"
@@ -55,9 +55,15 @@ function Login() {
           </button>
           <Link
             to="/signin"
-            className="btn btn-outline-primary py-3 my-3 mx-2 w-100 text-primary fw-semibold"
+            className="btn btn-outline-primary py-2 my-2 mx-2 w-100 text-primary fw-semibold"
           >
             Crear Cuenta
+          </Link>
+          <Link
+            to="/recovery"
+            className="btn btn-outline-primary py-2 my-2 mx-2 w-100 text-primary fw-semibold"
+          >
+            Recuperar Contraseña
           </Link>
         </form>
       </div>

@@ -20,6 +20,8 @@ import { useContext, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
 import { IoCloseCircleOutline } from "react-icons/io5";
 import DemoModal from "./components/DemoModal.jsx";
+import Recovery from "./views/Recovery.jsx";
+import Contact from "./views/Contact.jsx";
 
 function App() {
    const { store, actions } = useContext(Context);
@@ -52,7 +54,8 @@ function App() {
                   <Route index Component={Evento} />
                   <Route path="edit" Component={EditEvent} />
                </Route>
-
+               <Route path="/recovery" Component={Recovery} />
+               <Route path="/contact" Component={Contact} />
                <Route render={() => <h1>Not found!</h1>} />
             </Routes>
             <DemoModal />

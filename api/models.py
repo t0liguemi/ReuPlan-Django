@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
+import datetime
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -94,3 +95,10 @@ class Respuesta(models.Model):
 class Rechazado(models.Model):
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE)
     invitado = models.ForeignKey(User, on_delete=models.CASCADE)
+
+class RecoveryKey(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    key = models.CharField(max_length=8)
+    attempts = models.IntegerField(default=0)
+    successful_attempt = models.BooleanField(default=False)

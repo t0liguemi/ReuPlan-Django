@@ -16,12 +16,15 @@ from rest_framework.authentication import TokenAuthentication
 from django.db.models import Q
 from rest_framework.throttling import AnonRateThrottle,UserRateThrottle
 from rest_framework.decorators import throttle_classes
-
+from .utils import *
 import json
 from dotenv import load_dotenv
 import os
 from django.core.mail import send_mail
 from ReuPlan_Django.settings import EMAIL_HOST_USER
+import datetime
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 load_dotenv()
@@ -34,6 +37,7 @@ def ApiConnected(request):
     return JsonResponse({'msg':'Reuplan está en linea!'})
 
 class Users(generics.ListAPIView):
+    #unused
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -437,3 +441,78 @@ def ClearEventos(request):
     eventos=Evento.objects.all()
     eventos.delete()
     return JsonResponse({'msg':'TODOS LOS EVENTOS HAN SIDO ELIMINADOS'})
+
+@throttle_classes([AnonRateThrottle])
+class CreateRecoveryKey(APIView):
+    serializer_class = RecoveryKeySerializer
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    def post(self, request):
+        existing_keys = RecoveryKey.objects.filter(user=request.data.get('user')).first()
+        user = User.objects.filter(pk=request.data.get('user')).first()
+        if existing_keys:
+            existing_keys.delete()
+        key = generate_random_string()
+        RecoveryKey.objects.create(key=key,user=user)
+        subject="Reuplan: Recuperación de contraseña"
+        message="Hola! Solicitaste un cambio de contraseña en ReuPlan para la cuenta asociada a este correo, entra a la plataforma para verlo! https://www.reuplan.lol/#/recovery/user/"+str(user.id)+" e ingresa el código "+str(key)+".\n\nSi no has solicitado este cambio, ignora este correo."
+        email=user.email
+        recipient_list = [email]
+        send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
+        return Response({'key':key,'message':'Recovery key created succesfully'},status=status.HTTP_201_CREATED)
+
+@throttle_classes([AnonRateThrottle])
+class RecoveryAttempt(APIView):
+    serializer_class = RecoveryKeySerializer
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    def post (self,request):
+        entered_key = request.data.get('key')
+        user = User.objects.filter(pk=request.data.get('user')).first()
+        expected_key = RecoveryKey.objects.filter(user=user).first()
+        if expected_key is None: # User enters a key before the key has been created
+            return Response({'error':'Wrong Key'},status=status.HTTP_404_NOT_FOUND) #message returns error to hide the fact that the key has not been created yet
+        if datetime.datetime.now(datetime.UTC) - expected_key.created > datetime.timedelta(minutes=30): # User fails to enter a key within 30 minutes
+            expected_key.delete()
+            return Response({'error':'Key expired'},status=status.HTTP_400_BAD_REQUEST)
+        if entered_key != expected_key.key:  #User fails to enter a key correctly
+            expected_key.attempts = expected_key.attempts + 1
+            if expected_key.attempts > 4: #User tries to enter a key more than 4 times
+                expected_key.delete()
+                return Response({'error':'Too many attempts'},status=status.HTTP_400_BAD_REQUEST)
+            expected_key.save()
+            return Response({'error':'Wrong Key'},status=status.HTTP_404_NOT_FOUND)
+        if entered_key == expected_key.key: #User enters a key correctly
+            expected_key.successful_attempt = True
+            expected_key.save()
+            return Response({'message':'Key accepted'},status=status.HTTP_200_OK) #lead to frontend view to change password
+        return Response({'error':'Something went wrong'},status=status.HTTP_400_BAD_REQUEST)
+    
+@throttle_classes([AnonRateThrottle])
+@csrf_exempt
+@api_view(["POST"])
+def Contact(request):
+    name=request.data.get('name')
+    contacted_email=request.data.get('email')
+    message=request.data.get('message')+"\n\n"+"Enviado por: "+str(contacted_email)+"\n\n"+str(name)
+    subject="REUPLAN CONTACTO"
+    email="merengueconjamon@gmail.com"
+    recipient_list = [email]
+    send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
+    return Response({'message':'Email sent succesfully'},status=status.HTTP_200_OK)
+
+@throttle_classes([AnonRateThrottle])
+@csrf_exempt
+@api_view(["POST"])
+def EmailUsername(request):
+    requested_email=request.data.get('email')
+    user=User.objects.filter(email=requested_email).first()
+    if user is not None:
+        message="Hola, has solicitado recuperar tu nombre de usuario en ReuPlan.\n\n El nombre de usuario es: "+str(user.username)+".\n"+"\nSi deseas cambiar tu contraseña, utiliza ahora este nombre de usuario para solicitar el cambio."
+        subject="Reuplan: Recuperación de nombre de usuario"
+        email=requested_email
+        recipient_list = [email]
+        send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
+    return Response({'message':'If the account exists, an email will be sent'},status=status.HTTP_200_OK)

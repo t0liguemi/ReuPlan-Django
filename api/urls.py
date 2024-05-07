@@ -20,9 +20,12 @@ urlpatterns = [
     path('schedule', Schedule.as_view()),#Find rejection for event and delete it when a schedule is added
     path('schedule/<int:schedule_id>/delete', DeleteSchedule),
     path('rejection', Rejection.as_view()),
-    path('clearAPI/events', ClearEventos),
     path('docs', include_docs_urls(title="ReuplanAPI")),
     path('login', LoginView.as_view()),
     path('logout',LogoutView.as_view()),
-    path('auth',session_view.as_view())
+    path('auth', session_view.as_view()),
+    path('recovery/key/create', CreateRecoveryKey.as_view()),
+    path('recovery/username', EmailUsername),
+    path('recovery/key/attempt', RecoveryAttempt.as_view()),
+    path('contact', Contact)
 ]
