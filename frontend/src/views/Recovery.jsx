@@ -16,7 +16,7 @@ function Recovery() {
         "Content-type": "application/json",
       },
       body: JSON.stringify({
-        username: e.target.recoveryUsername.value,
+        user: e.target.recoveryUsername.value,
       }),
     }).then((response) => {
       if (response.status === 201) {
