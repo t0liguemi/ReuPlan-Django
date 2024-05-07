@@ -138,7 +138,11 @@ STATIC_URL = "static/"
 imported_cors_from_env = os.getenv("CORS_ORIGINS")
 parsed_cors_from_env = [origin.strip() for origin in imported_cors_from_env.split(',') if origin.strip()]
 
-CORS_ALLOWED_ORIGINS = parsed_cors_from_env
+if os.getenv("MODE") is "development":
+    CORS_ALLOW_ALL_ORIGINS = True
+    print("DEV MODE ON")
+else:
+    CORS_ALLOWED_ORIGINS = parsed_cors_from_env
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
