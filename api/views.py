@@ -445,12 +445,11 @@ def ClearEventos(request):
 @throttle_classes([AnonRateThrottle])
 class CreateRecoveryKey(APIView):
     serializer_class = RecoveryKeySerializer
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
     def post(self, request):
-        existing_keys = RecoveryKey.objects.filter(user=request.data.get('user')).first()
-        user = User.objects.filter(pk=request.data.get('user')).first()
+        user = User.objects.filter(username=request.data.get('user')).first()
+        if user is None:
+            return Response({'error':'User not found'},status=status.HTTP_404_NOT_FOUND)
+        existing_keys = RecoveryKey.objects.filter(user=user).first()
         if existing_keys:
             existing_keys.delete()
         key = generate_random_string()
@@ -465,9 +464,6 @@ class CreateRecoveryKey(APIView):
 @throttle_classes([AnonRateThrottle])
 class RecoveryAttempt(APIView):
     serializer_class = RecoveryKeySerializer
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
     def post (self,request):
         entered_key = request.data.get('key')
         user = User.objects.filter(pk=request.data.get('user')).first()
