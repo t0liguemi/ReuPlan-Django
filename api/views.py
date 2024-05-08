@@ -458,7 +458,7 @@ class CreateRecoveryKey(APIView):
         email=user.email
         recipient_list = [email]
         send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
-        return Response({'key':key,'message':'Recovery key created succesfully'},status=status.HTTP_201_CREATED)
+        return Response({'message':'Recovery key created succesfully'},status=status.HTTP_201_CREATED)
 
 @throttle_classes([AnonRateThrottle])
 class RecoveryAttempt(APIView):

@@ -99,11 +99,10 @@ function Recovery() {
       toast.error("Las contraseñas no coinciden");
       return;
     }
-    fetch(backendURL + "api/user/edit", {
+    fetch(backendURL + "api/recovery/password", {
       method: "PATCH",
       headers: {
         "Content-type": "application/json",
-        Authorization: "Token " + localStorage.getItem("reuPlanToken"),
       },
       body: JSON.stringify({
         username: recoveringUsername,
@@ -116,6 +115,7 @@ function Recovery() {
       }
       if (resp.status == 200) {
         toast.success("Datos de cuenta actualizados");
+        navigate("/login")
         return resp.json();
       }
     });
