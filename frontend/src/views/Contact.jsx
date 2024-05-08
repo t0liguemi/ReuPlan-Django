@@ -31,23 +31,23 @@ function Contact() {
   }
   return (
     <div className="container w-75 py-5">
-      <h2>Contacto</h2>
+      <h2 className="fw-semibold">Contacto</h2>
       <form
         onSubmit={(e) => {
           handleSubmit(e);
         }}
       >
         <div className="d-flex">
-          <label htmlFor="username" className="me-3 my-1">
+          <label htmlFor="username" className="fw-semibold me-3 my-1">
             Nombre
             <input className="form-control" id="username" required />
           </label>
-          <label htmlFor="email" className="my-1" required>
+          <label htmlFor="email" className="fw-semibold my-1" required>
             Email
             <input className="form-control " id="email" />
           </label>
         </div>
-        <label htmlFor="message" className="my-1">
+        <label htmlFor="message" className="fw-semibold my-1">
           Mensaje
         </label>
         <textarea className="form-control" id="message" required />

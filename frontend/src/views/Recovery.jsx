@@ -1,12 +1,14 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { toast } from "react-hot-toast";
-
+import { useNavigate } from "react-router-dom";
+import { Context } from "../store/context";
 function Recovery() {
+  const navigate = useNavigate();
   const backendURL = import.meta.env.DEV
     ? import.meta.env.VITE_APP_BACKEND_URL
     : "";
-
+  const {store,actions} = useContext(Context)
   const [recoveryStage, setRecoveryStage] = useState("start");
   const [recoveringUsername, setRecoveringUsername] = useState("");
 
@@ -120,6 +122,12 @@ function Recovery() {
       }
     });
   }
+
+  useEffect (()=>{
+    if (store.loggedIn){
+      navigate("/")
+    }
+  },[])
 
   return (
     <div className="container mx-auto my-auto w-50">

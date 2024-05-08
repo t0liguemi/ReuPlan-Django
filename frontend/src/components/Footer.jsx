@@ -81,10 +81,10 @@ function Footer() {
           </li> */}
 				<li className="nav-item" key="footer-4">
 					<Link
-						to="mailto:merengueconjamon@gmail.com"
+						to="/contact"
 						className="nav-link px-2 text-white"
 					>
-						Comentarios/Reportes
+						Contacto
 					</Link>
 				</li>
 			</ul>
