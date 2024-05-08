@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { toast } from "react-hot-toast";
-import { useNavigate } from "react-router-dom";
+import { useNavigate   } from "react-router-dom";
 import { Context } from "../store/context";
 function Recovery() {
   const navigate = useNavigate();
@@ -13,7 +13,6 @@ function Recovery() {
   const [recoveringUsername, setRecoveringUsername] = useState("");
 
   function handleSubmitUsername(e) {
-    console.log(e.target.recoveryUsername.value);
     fetch(backendURL + "api/recovery/key/create", {
       method: "POST",
       headers: {
@@ -29,7 +28,7 @@ function Recovery() {
         );
         setRecoveryStage("userFound");
         setRecoveringUsername(e.target.recoveryUsername.value);
-      }
+      }else {toast.error("Usuario no encontrado")}
     });
   }
 
@@ -130,7 +129,7 @@ function Recovery() {
   },[])
 
   return (
-    <div className="container mx-auto my-auto w-50">
+    <div className="container mx-auto my-auto">
       {recoveryStage === "start" && (
         <>
           <div className="my-3">
@@ -138,7 +137,7 @@ function Recovery() {
               Ingresa tu nombre de usuario para recuperar tu contraseña:
             </h2>
             <form
-              className="d-flex align-items-end"
+              className="d-flex flex-wrap align-items-end"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSubmitUsername(e);
@@ -147,13 +146,13 @@ function Recovery() {
               <label className="" htmlFor="recoveryUsername">
                 Nombre de usuario
                 <input
-                  className="form-control"
+                  className="form-control my-2"
                   id="recoveryUsername"
                   required
                 />
               </label>
               <button
-                className="py-2 mx-2 btn btn-primary fw-semibold"
+                className="py-2 mx-2 my-2 btn btn-primary fw-semibold"
                 type="submit"
               >
                 Continuar
@@ -166,7 +165,7 @@ function Recovery() {
               cuenta asociada a esa dirección.
             </h4>
             <form
-              className="d-flex align-items-end"
+              className="d-flex flex-wrap align-items-end"
               onSubmit={(e) => {
                 e.preventDefault();
                 handleSubmitEmail(e);
@@ -174,10 +173,10 @@ function Recovery() {
             >
               <label className="" htmlFor="recoveryEmail">
                 Dirección de email
-                <input className="form-control" id="recoveryEmail" required />
+                <input className="form-control my-2" id="recoveryEmail" required />
               </label>
               <button
-                className="py-2 mx-2 btn btn-primary fw-semibold"
+                className="py-2 my-2 mx-2 btn btn-primary fw-semibold"
                 type="submit"
               >
                 Continuar

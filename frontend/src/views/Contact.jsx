@@ -7,11 +7,6 @@ function Contact() {
     : "";
 
   function handleSubmit(event) {
-    console.log(
-      event.target.username.value,
-      event.target.email.value,
-      event.target.message.value
-    );
     fetch(backendURL + "api/contact", {
       method: "POST",
       headers: {
@@ -30,7 +25,7 @@ function Contact() {
     });
   }
   return (
-    <div className="container w-75 py-5">
+    <div className="container py-5">
       <h2 className="fw-semibold">Contacto</h2>
       <form
         onSubmit={(e) => {
