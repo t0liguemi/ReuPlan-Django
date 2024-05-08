@@ -7,7 +7,7 @@ function Recovery() {
     ? import.meta.env.VITE_APP_BACKEND_URL
     : "";
 
-  const [nextStep, setNextStep] = useState(false);
+  const [recoveryStage, setRecoveryStage] = useState("start");
   const [recoveringUsername, setRecoveringUsername] = useState("");
 
   function handleSubmitUsername(e) {
@@ -25,7 +25,7 @@ function Recovery() {
         toast.success(
           "Se ha enviado un correo con una clave para recuperación"
         );
-        setNextStep(true);
+        setRecoveryStage("userFound");
         setRecoveringUsername(e.target.recoveryUsername.value);
       }
     });
@@ -51,17 +51,23 @@ function Recovery() {
         username: recoveringUsername,
         key: key.toUpperCase(),
       }),
-    }).then((response) => {
-      if (response.status === 200) {
-        toast(
-          "Si es que existe una cuenta con ese correo, recibirá un correo con la información solicitada"
-        );
-      }
-    });
+    })
+      .then((response) => {
+        if (response.status === 200) {
+          toast("Código de recuperación correcto");
+          setRecoveryStage("codeSuccess");
+        }
+      })
+      .then((data) => {
+        if (data.error) {
+          toast.error(data.error);
+        } else if (data.message) {
+          toast.success(data.message);
+        }
+      });
   }
 
   function handleSubmitEmail(e) {
-    console.log(e.target.recoveryEmail.value);
     fetch(backendURL + "api/recovery/username", {
       method: "POST",
       headers: {
@@ -78,9 +84,43 @@ function Recovery() {
       }
     });
   }
+
+  function handleSubmitPassword(e) {
+    e.preventDefault();
+    const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]{10,}$/;
+    if (!passwordPattern.test(e.target.formPassword.value)){
+      toast.error("La contraseña debe tener al menos 10 caracteres, 1 minúscula, 1 mayúscula , un símbolo y un número")
+      return;
+    }
+    if (e.target.formPassword.value != e.target.formConfirmPassword.value){
+      toast.error("Las contraseñas no coinciden");
+      return;
+    }
+    fetch(backendURL + "api/user/edit", {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+        Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+      },
+      body: JSON.stringify({username: recoveringUsername, password: e.target.formPassword.value}),
+    })
+      .then((resp) => {
+        if (resp.status === 429) {
+          toast.error(
+            "Límite de solicitudes excedido, intentalo más tarde"
+          );
+          return;
+        }
+        if (resp.status == 200) {
+          toast.success("Datos de cuenta actualizados");
+          return resp.json();
+        }
+      })
+  }
+
   return (
     <div className="container mx-auto my-auto w-50">
-      {!nextStep && (
+      {recoveryStage === "start" && (
         <>
           <div className="my-3">
             <h2 className="fw-semibold">
@@ -142,7 +182,7 @@ function Recovery() {
           </div>
         </>
       )}
-      {nextStep && (
+      {recoveryStage === "userFound" && (
         <>
           <div className="my-3">
             <form
@@ -159,48 +199,48 @@ function Recovery() {
                 <input
                   style={{ textTransform: "uppercase" }}
                   id="recoveryCode1"
-                  className="col fs-4 form-control mx-1 text-center"
+                  className="col fs-4 p-0 flex-fill  form-control mx-1 text-center"
                   maxLength={1}
                 />
                 <input
                   style={{ textTransform: "uppercase" }}
-                  className="col fs-4 form-control mx-1 text-center"
+                  className="col px-0 flex-fill fs-4 form-control mx-1 text-center"
                   maxLength={1}
                   id="recoveryCode2"
                 />
                 <input
                   style={{ textTransform: "uppercase" }}
-                  className="col fs-4 form-control mx-1 text-center"
+                  className="col fs-4 px-0 flex-fill form-control mx-1 text-center"
                   maxLength={1}
                   id="recoveryCode3"
                 />
                 <input
                   style={{ textTransform: "uppercase" }}
-                  className="col fs-4 form-control mx-1 text-center"
+                  className="col fs-4 p-0 flex-fill form-control mx-1 text-center"
                   maxLength={1}
                   id="recoveryCode4"
                 />
                 <input
                   style={{ textTransform: "uppercase" }}
-                  className="col fs-4 form-control mx-1 text-center"
+                  className="col fs-4 p-0 flex-fill form-control mx-1 text-center"
                   maxLength={1}
                   id="recoveryCode5"
                 />
                 <input
                   style={{ textTransform: "uppercase" }}
-                  className="col fs-4 form-control mx-1 text-center"
+                  className="col fs-4 p-0 flex-fill form-control mx-1 text-center"
                   maxLength={1}
                   id="recoveryCode6"
                 />
                 <input
                   style={{ textTransform: "uppercase" }}
-                  className="col fs-4 form-control mx-1 text-center"
+                  className="col fs-4 p-0 flex-fill form-control mx-1 text-center"
                   maxLength={1}
                   id="recoveryCode7"
                 />
                 <input
                   style={{ textTransform: "uppercase" }}
-                  className="col fs-4 form-control mx-1 text-center"
+                  className="col fs-4 p-0 flex-fill form-control mx-1 text-center"
                   maxLength={1}
                   id="recoveryCode8"
                 />
@@ -213,6 +253,40 @@ function Recovery() {
               </button>
             </form>
           </div>
+        </>
+      )}
+      {recoveryStage === "codeSuccess" && (
+        <>
+          <h4 className="fw-semibold">Ingresa ahora tu nueva contraseña</h4>
+          <form
+            onSubmit={(e) => {
+              handleSubmitPassword(e);
+            }}
+          >
+            <div className="col">
+              <label className="fw-semibold" htmlFor="formPassword">
+                Contraseña
+              </label>
+              <input
+                id="formPassword"
+                type="password"
+                className="text my-2 form-control"
+              ></input>
+            </div>
+            <div className="col">
+              <label className="fw-semibold" htmlFor="formConfirmPassword">
+                Confirmación de contraseña
+              </label>
+              <input
+                id="formConfirmPassword"
+                type="password"
+                className="text my-2 form-control"
+              ></input>
+            </div>
+            <button className="btn btn-primary my-4 w-50 fw-semibold">
+              Confirmar
+            </button>
+          </form>
         </>
       )}
     </div>

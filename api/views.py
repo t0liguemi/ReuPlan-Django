@@ -80,7 +80,6 @@ class LogoutView(APIView):
         token.delete()
         return Response({'success': 'Logged out successfully'}, status=status.HTTP_200_OK)
 
-
 class session_view(APIView):
     throttle_classes=[UserRateThrottle]
     authentication_classes= [TokenAuthentication]
@@ -469,22 +468,22 @@ class RecoveryAttempt(APIView):
         user = User.objects.filter(username=request.data.get('username')).first()
         expected_key = RecoveryKey.objects.filter(user=user).first()
         if expected_key is None: # User enters a key before the key has been created
-            return Response({'error':'Wrong Key'},status=status.HTTP_404_NOT_FOUND) #message returns error to hide the fact that the key has not been created yet
+            return Response({'error':'Clave equivocada'},status=status.HTTP_404_NOT_FOUND) #message returns error to hide the fact that the key has not been created yet
         if datetime.datetime.now(datetime.UTC) - expected_key.created > datetime.timedelta(minutes=30): # User fails to enter a key within 30 minutes
             expected_key.delete()
-            return Response({'error':'Key expired'},status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error':'Clave expirada'},status=status.HTTP_400_BAD_REQUEST)
         if entered_key != expected_key.key:  #User fails to enter a key correctly
             expected_key.attempts = expected_key.attempts + 1
             if expected_key.attempts > 4: #User tries to enter a key more than 4 times
                 expected_key.delete()
-                return Response({'error':'Too many attempts'},status=status.HTTP_400_BAD_REQUEST)
+                return Response({'error':'Demasiados intentos'},status=status.HTTP_400_BAD_REQUEST)
             expected_key.save()
-            return Response({'error':'Wrong Key'},status=status.HTTP_404_NOT_FOUND)
+            return Response({'error':'Clave expirada'},status=status.HTTP_404_NOT_FOUND)
         if entered_key == expected_key.key: #User enters a key correctly
             expected_key.successful_attempt = True
             expected_key.save()
-            return Response({'message':'Key accepted'},status=status.HTTP_200_OK) #lead to frontend view to change password
-        return Response({'error':'Something went wrong'},status=status.HTTP_400_BAD_REQUEST)
+            return Response({'message':'Clave aceptada!'},status=status.HTTP_200_OK) #lead to frontend view to change password
+        return Response({'error':'Algo salió mal!'},status=status.HTTP_400_BAD_REQUEST)
     
 @throttle_classes([AnonRateThrottle])
 @csrf_exempt
@@ -512,3 +511,15 @@ def EmailUsername(request):
         recipient_list = [email]
         send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
     return Response({'message':'If the account exists, an email will be sent'},status=status.HTTP_200_OK)
+
+@throttle_classes([AnonRateThrottle])
+@csrf_exempt
+@api_view(["PATCH"])
+def PasswordRecovery(request):
+    password=request.data.get('password')
+    username=request.data.get('username')
+    user=User.objects.filter(username=username).first()
+    user.set_password(password)
+    user.save()
+    return Response({'message':'Password changed succesfully'},status=status.HTTP_200_OK)
+
