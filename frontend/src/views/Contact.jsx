@@ -1,5 +1,7 @@
 import { toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 function Contact() {
+  const navigate = useNavigate()
   const backendURL = import.meta.env.DEV
     ? import.meta.env.VITE_APP_BACKEND_URL
     : "";
@@ -23,6 +25,7 @@ function Contact() {
     }).then((response) => {
       if (response.status === 200) {
         toast.success("Mensaje enviado con éxito");
+        navigate("/")
       }
     });
   }

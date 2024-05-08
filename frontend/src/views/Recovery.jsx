@@ -87,12 +87,15 @@ function Recovery() {
 
   function handleSubmitPassword(e) {
     e.preventDefault();
-    const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]{10,}$/;
-    if (!passwordPattern.test(e.target.formPassword.value)){
-      toast.error("La contraseña debe tener al menos 10 caracteres, 1 minúscula, 1 mayúscula , un símbolo y un número")
+    const passwordPattern =
+      /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]{10,}$/;
+    if (!passwordPattern.test(e.target.formPassword.value)) {
+      toast.error(
+        "La contraseña debe tener al menos 10 caracteres, 1 minúscula, 1 mayúscula , un símbolo y un número"
+      );
       return;
     }
-    if (e.target.formPassword.value != e.target.formConfirmPassword.value){
+    if (e.target.formPassword.value != e.target.formConfirmPassword.value) {
       toast.error("Las contraseñas no coinciden");
       return;
     }
@@ -102,20 +105,20 @@ function Recovery() {
         "Content-type": "application/json",
         Authorization: "Token " + localStorage.getItem("reuPlanToken"),
       },
-      body: JSON.stringify({username: recoveringUsername, password: e.target.formPassword.value}),
-    })
-      .then((resp) => {
-        if (resp.status === 429) {
-          toast.error(
-            "Límite de solicitudes excedido, intentalo más tarde"
-          );
-          return;
-        }
-        if (resp.status == 200) {
-          toast.success("Datos de cuenta actualizados");
-          return resp.json();
-        }
-      })
+      body: JSON.stringify({
+        username: recoveringUsername,
+        password: e.target.formPassword.value,
+      }),
+    }).then((resp) => {
+      if (resp.status === 429) {
+        toast.error("Límite de solicitudes excedido, intentalo más tarde");
+        return;
+      }
+      if (resp.status == 200) {
+        toast.success("Datos de cuenta actualizados");
+        return resp.json();
+      }
+    });
   }
 
   return (
@@ -151,8 +154,8 @@ function Recovery() {
           </div>
           <div className="my-3">
             <h4 className="fw-semibold">
-              No lo recuerdas? Ingresa tu email, recibirás el nombre de usuario
-              en esa dirección.
+              ¿No lo recuerdas? Ingresa tu email, recibirás el nombre de la
+              cuenta asociada a esa dirección.
             </h4>
             <form
               className="d-flex align-items-end"
@@ -174,7 +177,7 @@ function Recovery() {
             </form>
             <div>
               <small>
-                En caso de que no recuerdes ambos datos, utiliza el
+                En caso de que no recuerdes ninguno de los datos, utiliza el{" "}
                 <Link to="/contact">formulario de contacto</Link> para
                 comunicarte con nosotros y resolver tu caso directamente.
               </small>

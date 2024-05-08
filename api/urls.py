@@ -27,5 +27,6 @@ urlpatterns = [
     path('recovery/key/create', CreateRecoveryKey.as_view()),
     path('recovery/username', EmailUsername),
     path('recovery/key/attempt', RecoveryAttempt.as_view()),
+    path('recovery/password', PasswordRecovery),
     path('contact', Contact)
 ]
