@@ -18,10 +18,10 @@ import Profile from "./views/Profile.jsx";
 import ScrollToAnchor from "./components/ScrollToAnchor.jsx";
 import { useContext, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
-import { IoCloseCircleOutline } from "react-icons/io5";
 import DemoModal from "./components/DemoModal.jsx";
 import Recovery from "./views/Recovery.jsx";
 import Contact from "./views/Contact.jsx";
+import Dashboard from "./views/Dashboard.jsx";
 
 function App() {
    const { store, actions } = useContext(Context);
@@ -33,6 +33,7 @@ function App() {
 
    return (
       <div className="App d-flex flex-column min-vh-100">
+         <div className="backgroundColor"></div>
          <HashRouter>
             <ScrollToAnchor />
             {store.loggedIn ? <LoggedInNavbar /> : <Navbar />}
@@ -46,6 +47,7 @@ function App() {
                   path="/signin/:newUsername/:testerKey"
                   Component={store.loggedIn ? EventList : SignIn}
                />
+               <Route path="/dashboard" Component={Dashboard} />
                <Route path="/profile" Component={Profile} />
                <Route path="/" Component={Welcome} />
                <Route path="/create" Component={CreateEvent} />

@@ -9,7 +9,7 @@ class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'name', 'key','password']
+        fields = ['id', 'username', 'email', 'name','password']
 
 class EventoSerializer(serializers.ModelSerializer):
     class Meta:

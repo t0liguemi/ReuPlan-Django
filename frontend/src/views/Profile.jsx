@@ -119,20 +119,6 @@ const Profile = () => {
                     ></input>
                   </div>
                 </div>
-                <div className="row gap-5 my-4">
-                  <div className="col">
-                    <label className="col fw-semibold">
-                      Tu código de tester
-                    </label>
-                    <input
-                      id="testerCode"
-                      className="text form-control my-2"
-                      placeholder="tu código"
-                      defaultValue={store.currentUserInfo.key}
-                      disabled
-                    ></input>
-                  </div>
-                </div>
                 {/* <h6 className="fw-semibold">*Cambios en estos datos requerirán que vuelvas a ingresar</h6> */}
                 <button
                   className="btn btn-primary px-5 my-2 fw-semibold fs-5"

@@ -81,15 +81,6 @@ const SignIn = () => {
         </div>
         <div className="row gap-5 my-4">
           <div className="col">
-            <label className="col fw-semibold">
-              Código de Reuplan Tester
-            </label>
-            <input
-              id="betakey"
-              className="text form-control my-2"
-              placeholder="tu código"
-              defaultValue={testerKey}
-            ></input>
           </div>
         </div>
         {/* <h6 className="fw-semibold">*Cambios en estos datos requerirán que vuelvas a ingresar</h6> */}

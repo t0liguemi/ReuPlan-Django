@@ -22,7 +22,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True,default='')
     username = models.CharField(max_length=255, unique=True,default='')  # Username as identifier
     name = models.CharField(max_length=255, blank=True, default='', null=True)
-    key = models.CharField(max_length=100, blank=True, null=False, default='',unique=True)  # Additional key field
     date_joined = models.DateTimeField(default=timezone.now)
     last_login = models.DateTimeField(blank=True,null=True)
 

@@ -29,9 +29,6 @@ from django.utils.decorators import method_decorator
 
 load_dotenv()
 
-USER_KEYS = os.getenv('USER_KEYS')
-
-keys_list = USER_KEYS.split(',')
 
 def ApiConnected(request):
     return JsonResponse({'msg':'Reuplan está en linea!'})
@@ -54,7 +51,6 @@ def GetUserDetails(request,user_id):
         'id':user.id,
         'name':user.name,
         'email':user.email,
-        'key':user.key
     })
 
 class LoginView(APIView):
@@ -93,24 +89,19 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
-            incoming_key =serializer.validated_data.get('key')
-            if incoming_key not in keys_list:
-                return Response({'error':'Key expired or not found'}, status=status.HTTP_400_BAD_REQUEST)
             user_model = get_user_model()
             user = user_model.objects.create_user(
                 username=serializer.validated_data['username'],
                 email=serializer.validated_data['email'],
                 password=serializer.validated_data['password'],
-                key=serializer.validated_data['key'],
                 name=serializer.validated_data.get('name',None)
                   # Optional if you have username field
             )
             subject="Bienvenidx a ReuPlan"
-            message="Tu cuenta de ReuPlan ha sido creada con éxito, tu nombre de usuario es "+serializer.validated_data['username']+" y tu clave de usuario es "+serializer.validated_data['key']
+            message="Tu cuenta de ReuPlan ha sido creada con éxito, tu nombre de usuario es "+serializer.validated_data['username']+"."
             email=serializer.validated_data['email']
             recipient_list = [email]
             send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
-
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
