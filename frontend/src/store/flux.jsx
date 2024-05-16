@@ -11,7 +11,6 @@ const getState = ({ getStore, getActions, setStore }) => {
       modalView: false,
       imprescindibleToggle: true,
       pending: 0,
-      generalToast: { state: false, message: "", type: "primary" },
       updatedList: 0,
       currentEventResponses: [],
       currentEventViability: true,
@@ -806,7 +805,6 @@ const getState = ({ getStore, getActions, setStore }) => {
               password: e.target[2].value,
               email: e.target[3].value,
               name: e.target[5].value,
-              key: e.target[6].value,
             }),
           })
             .then((resp) => {

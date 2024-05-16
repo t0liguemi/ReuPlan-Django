@@ -25,17 +25,8 @@ function Bienvenida() {
               y tus invitados agregarán sus disponibilidades.
             </p>
             <p className="fs-5 fw-normal mt-4 opacity-75">
-              {" "}
-              Reuplan está en fase alpha, para poder testearlo por favor{" "}
-              <Link
-                className="text-primary opacity-75"
-                to="https://wa.me/56955179878?text=Hola!%20Quiero%20usar%20ReuPlan,%20estos%20son%20mis%20datos:"
-              >
-                contáctame
-              </Link>{" "}
-              y envíame tus datos para entregarte una clave.
               <br />
-              Eventualmente limitaré la cantidad de eventos simultáneos por
+              La app sigue en fase de desarollo, pero eventualmente limitaré la cantidad de eventos simultáneos por
               usuario, pero por ahora usen la app tanto como necesiten!
             </p>
           </div>

@@ -10,6 +10,8 @@ urlpatterns = [
     path('user/get/<int:user_id>', GetUserDetails, name='user-details'),
     path('event/create', CreateEvent.as_view()),
     path('event/all', Events.as_view()),
+    path('event/user/<int:user_id>', GetOwnEvents, name='user-events'),
+    path('event/invited/<int:user_id>', GetInvitedEvents, name='user-invited-events'),
     path('event/get/<int:event_id>', GetEventDetails, name='event-details'),
     path('event/<int:event_id>/organizer', EventOrgData, name='organizer-details'),
     path('event/<int:event_id>/delete', DeleteEvent),

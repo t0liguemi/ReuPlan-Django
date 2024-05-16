@@ -203,11 +203,32 @@ class Events(generics.ListAPIView):
     queryset = Evento.objects.all()
     serializer_class = EventoSerializer
 
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated]) 
+def GetOwnEvents(request,user_id):
+    events = Evento.objects.filter(organizador_id=user_id)
+    if events is None:
+        return JsonResponse({'error': 'No events not found for this user'}, status=404)
+    serialized_events = [EventoSerializer(event).data for event in events]
+    return JsonResponse({'events':serialized_events}, status=200)
+
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def GetInvitedEvents(request,user_id):
+    invitaciones = Invitacion.objects.filter(invitado=user_id)
+    if invitaciones is None:
+        return JsonResponse({'error': 'No invitations found for this user'}, status=404)
+    eventos = [invitacion.evento for invitacion in invitaciones]
+    serialized_events = [EventoSerializer(evento).data for evento in eventos]
+    return JsonResponse({"events":serialized_events},status=200)
+
+
+
+
 @throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated]) 
 def GetEventDetails(request,event_id):
-    
     event = Evento.objects.filter(id=event_id).first()
     if event is None:
         return JsonResponse({'error': 'Event not found'}, status=404)

@@ -22,6 +22,7 @@ import DemoModal from "./components/DemoModal.jsx";
 import Recovery from "./views/Recovery.jsx";
 import Contact from "./views/Contact.jsx";
 import Dashboard from "./views/Dashboard.jsx";
+import UserEvents from "./views/UserEvents.jsx";
 
 function App() {
    const { store, actions } = useContext(Context);
@@ -34,7 +35,7 @@ function App() {
    return (
       <div className="App d-flex flex-column min-vh-100">
          <div className="backgroundColor"></div>
-         <HashRouter>
+         <HashRouter className="contentContainer">
             <ScrollToAnchor />
             {store.loggedIn ? <LoggedInNavbar /> : <Navbar />}
             <Routes>
@@ -43,15 +44,12 @@ function App() {
                   path="/signin"
                   Component={store.loggedIn ? EventList : SignIn}
                />
-               <Route
-                  path="/signin/:newUsername/:testerKey"
-                  Component={store.loggedIn ? EventList : SignIn}
-               />
-               <Route path="/dashboard" Component={Dashboard} />
+               <Route path="/dashboard" Component={store.loggedIn ? Dashboard:Login} />
                <Route path="/profile" Component={Profile} />
                <Route path="/" Component={Welcome} />
                <Route path="/create" Component={CreateEvent} />
                <Route path="/eventList" Component={EventList} />
+               <Route path="/events/own" Component={store.loggedIn? UserEvents:Login} />
                <Route path="/event/:eventID">
                   <Route index Component={Evento} />
                   <Route path="edit" Component={EditEvent} />
