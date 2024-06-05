@@ -119,6 +119,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         });
       },
       getUserEvents: () => {
+        if (!store.loggedIn){return}
         fetch(backendURL + "api/event/user", {
           method: "GET",
           credentials: "include",
@@ -225,7 +226,9 @@ const getState = ({ getStore, getActions, setStore }) => {
         setStore({ acceptedEvents: calculatedAcceptedEvents });
       },
       userInvitesAndResponses: () => {
+        const getStore = getStore();
         const actions = getActions();
+        if (!store.loggedIn){return}
         fetch(backendURL + "api/user/participation", {
           headers: {
             "Content-type": "application/json",
@@ -1132,8 +1135,11 @@ const getState = ({ getStore, getActions, setStore }) => {
       deleteAvailability: (id, navigate) => {
         const actions = getActions();
         fetch(backendURL + "api/schedule/" + id + "/delete", {
+          method: "DELETE",
+          credentials: "include",
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
         })
           .then((resp) => {

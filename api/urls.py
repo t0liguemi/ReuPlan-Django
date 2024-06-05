@@ -10,7 +10,7 @@ urlpatterns = [
     path('user/activation', AccountActivation.as_view()), #CSRF Exempt
     path('user/participation', GetUserParticipationDetails),
     path('event/create', CreateEvent.as_view()), #CSRF protected
-    path('event/all', Events), #CORRECT TO USE IT FOR NEW EVENT LIST 
+    # path('event/all', Events), #CORRECT TO USE IT FOR NEW EVENT LIST 
     path('event/user', GetOwnEvents.as_view()), #Protected by session cookie
     path('event', GetEventDetails, name='event-details'), #CSRF protected
     path('event/delete', DeleteEvent),  #CSRF protected
