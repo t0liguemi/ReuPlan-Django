@@ -41,7 +41,7 @@ if os.getenv("WORKING_MODE") == "development":
 else:
     DEBUG = False
 
-ALLOWED_HOSTS =['.reuplan.lol']
+ALLOWED_HOSTS =['.reuplan.lol','.reuplan.up.railway.app']
 
 
 
@@ -220,7 +220,7 @@ CORS_ALLOW_CREDENTIALS = True
 STATICFILES_DIRS = [BASE_DIR.joinpath('frontend','dist','assets')]
 STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 
-CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000/","http://127.0.0.1:5173","http://localhost:5173","https://reuplan.up.railway.app","https://www.reuplan.lol","https://reuplan.lol","http://192.168.1.11:5173/"]
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000/","http://127.0.0.1:5173","http://localhost:5173","https://reuplan.up.railway.app","https://www.reuplan.lol","https://reuplan.lol","http://192.168.1.11:5173"]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

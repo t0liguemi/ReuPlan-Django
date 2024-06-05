@@ -127,7 +127,7 @@ class RegisterView(APIView):
             key = SignupKey.objects.create(key=activation_key,user=user)
             if not key:
                 return Response({'error':'Something went wrong'},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-            link = "https://reuplan.up.railway.app/#/activate/"+activation_key
+            link = "https://reuplan.lol/#/activate/"+activation_key
             subject="Bienvenidx a ReuPlan"
             message="Hola "+serializer.validated_data.get('username')+" !\n"+"Tu cuenta de ReuPlan ha sido creada con éxito, para activarla haz click en el siguiente enlace :\n"+link+"\n\n"+"Esperamos que reuplan te sea útil!"
             email=serializer.validated_data['email']
@@ -339,7 +339,7 @@ class Invite(APIView):
                 imprescindible=imprescindible
             )
             subject="Reuplan: Invitación a un evento"
-            message="Hola! Has sido invitado a al evento "+target_event.name+", creado por el usuario "+target_event.organizador.username+" en ReuPlan, entra a la plataforma para verlo! https://reuplan.up.railway.app/#/event/"+str(target_event.id)
+            message="Hola! Has sido invitado a al evento "+target_event.name+", creado por el usuario "+target_event.organizador.username+" en ReuPlan, entra a la plataforma para verlo! https://reuplan.lol/#/event/"+str(target_event.id)
             email=invitee.email
             recipient_list = [email]
             send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
@@ -507,7 +507,7 @@ class CreateRecoveryKey(APIView):
         key = generate_random_string(8)
         RecoveryKey.objects.create(key=key,user=user)
         subject="Reuplan: Recuperación de contraseña"
-        message="Hola! Solicitaste un cambio de contraseña en ReuPlan para la cuenta asociada a este correo. Ingresa el código "+str(key)+".\n\nSi no has solicitado este cambio, ignora este correo."
+        message="Hola! Solicitaste un cambio de contraseña en ReuPlan.lol para la cuenta asociada a este correo. Ingresa el código "+str(key)+".\n\nSi no has solicitado este cambio, ignora este correo."
         email=user.email
         recipient_list = [email]
         send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
@@ -562,7 +562,7 @@ class EmailUsername(APIView):
         requested_email=request.data.get('email')
         user=User.objects.filter(email=requested_email).first()
         if user is not None:
-            message="Hola, has solicitado recuperar tu nombre de usuario en ReuPlan.\n\n El nombre de usuario es: "+str(user.username)+".\n"+"\nSi deseas cambiar tu contraseña, utiliza ahora este nombre de usuario para solicitar el cambio."
+            message="Hola, has solicitado recuperar tu nombre de usuario en ReuPlan.lol.\n\n El nombre de usuario es: "+str(user.username)+".\n"+"\nSi deseas cambiar tu contraseña, utiliza ahora este nombre de usuario para solicitar el cambio."
             subject="Reuplan: Recuperación de nombre de usuario"
             email=requested_email
             recipient_list = [email]
@@ -607,6 +607,7 @@ class AccountActivation(APIView):
 
 @throttle_classes([AnonRateThrottle])
 @csrf_exempt
+@permission_classes([AllowAny])
 @api_view(["GET"])
 def delete_account(request,username):
     user=User.objects.filter(username=username).first()
