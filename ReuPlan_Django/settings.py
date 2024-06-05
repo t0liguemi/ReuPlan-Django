@@ -43,7 +43,7 @@ if os.getenv("WORKING_MODE") == "development":
 else:
     DEBUG = False
 
-ALLOWED_HOSTS =['https://www.reuplan.lol', 'https://reuplan.lol','https://reuplan.up.railway.app','localhost','127.0.0.1']
+ALLOWED_HOSTS =['.reuplan.lol']
 
 
 
@@ -198,7 +198,7 @@ if os.getenv("WORKING_MODE") == "development":
     CSRF_COOKIE_HTTPONLY = False
     SESSION_COOKIE_HTTPONLY = False
     CSRF_COOKIE_SECURE = False
-    CSRF_COOKIE_DOMAIN = '127.0.0.1'
+    # CSRF_COOKIE_DOMAIN = '127.0.0.1'
 else:
     CSRF_COOKIE_SAMESITE = 'Strict'
     SESSION_COOKIE_SAMESITE = 'Strict'
