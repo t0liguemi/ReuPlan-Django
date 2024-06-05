@@ -605,12 +605,12 @@ class AccountActivation(APIView):
         else: return Response({'error':'Key not found'},status=status.HTTP_404_NOT_FOUND)
 
 
-@throttle_classes([AnonRateThrottle])
-@csrf_exempt
-@permission_classes([AllowAny])
-@api_view(["GET"])
-def delete_account(request,username):
-    user=User.objects.filter(username=username).first()
-    if user is not None:
-        user.delete()
-        return Response({'message':'Account deleted successfully'},status=status.HTTP_200_OK)
+# @throttle_classes([AnonRateThrottle])
+# @csrf_exempt
+# @permission_classes([AllowAny])
+# @api_view(["GET"])
+# def delete_account(request,username):
+#     user=User.objects.filter(username=username).first()
+#     if user is not None:
+#         user.delete()
+#         return Response({'message':'Account deleted successfully'},status=status.HTTP_200_OK)

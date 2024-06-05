@@ -29,5 +29,5 @@ urlpatterns = [
     path('recovery/password', PasswordRecovery.as_view()), #CSRF Exempt
     path('contact', Contact), #CSRF Exempt
     path('csrf',get_csrf_token),
-    path('deletedeletedelete/delete/<str:username>',delete_account)
+    # path('deletedeletedelete/delete/<str:username>',delete_account)
 ]
