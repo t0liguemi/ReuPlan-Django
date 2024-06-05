@@ -1,49 +1,49 @@
-from django.shortcuts import render, get_object_or_404
+import json
+import os
 from .models import *
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status, generics
-from rest_framework.authtoken.models import Token
 from .serializers import *
+from .utils import *
+from django.shortcuts import render, get_object_or_404
+from django.core.mail import send_mail
+from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.http import JsonResponse,HttpResponseForbidden
+from django.middleware.csrf import CsrfViewMiddleware, get_token
 from django.contrib.auth import authenticate,login, get_user_model, logout
 from django.contrib.auth.hashers import make_password, check_password
-from django.http import JsonResponse
-from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_POST
-from rest_framework.decorators import authentication_classes,permission_classes,api_view
-from rest_framework.permissions import IsAuthenticated
+from django.views.decorators.csrf import csrf_exempt, csrf_protect, ensure_csrf_cookie
+from rest_framework import status, generics
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import authentication_classes,permission_classes,api_view,throttle_classes
+from rest_framework.permissions import IsAuthenticated,AllowAny
 from rest_framework.authentication import TokenAuthentication
-from django.db.models import Q
 from rest_framework.throttling import AnonRateThrottle,UserRateThrottle
-from rest_framework.decorators import throttle_classes
-from .utils import *
-import json
 from dotenv import load_dotenv
-import os
-from django.core.mail import send_mail
 from ReuPlan_Django.settings import EMAIL_HOST_USER
 import datetime
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-
 
 load_dotenv()
 
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    csrf_token = get_token(request)
+    response = JsonResponse({'csrfToken': csrf_token})
+    response.set_cookie('csrftoken', csrf_token, domain='127.0.0.1', path='/', secure=True, httponly=True, samesite='None')
+    return response
 
 def ApiConnected(request):
     return JsonResponse({'msg':'Reuplan está en linea!'})
 
-class Users(generics.ListAPIView):
-    #unused
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-
-
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @throttle_classes([UserRateThrottle])
-def GetUserDetails(request,user_id):
-    user = User.objects.filter(id=user_id).first()
+@api_view(['GET'])
+def GetUserDetails(request):
+    user_id = request.user
+    user = User.objects.filter(username=request.user).first()
     if user is None:
         return JsonResponse({'error':'Not found'},status=404)
     return JsonResponse({
@@ -53,39 +53,65 @@ def GetUserDetails(request,user_id):
         'email':user.email,
     })
 
+"""""
 class LoginView(APIView):
     throttle_classes=[AnonRateThrottle]
+    permission_classes=[AllowAny]
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     def post(self, request):
         user = get_object_or_404(User,username=request.data['username'])
         if not user.check_password(request.data['password']):
             return Response({'error':'Invalid Credentials'},status=status.HTTP_404_NOT_FOUND)
-        
         token,_ = Token.objects.get_or_create(user=user)
         serializer = UserSerializer(instance=user)
         return Response({'token':token.key,'user':serializer.data['username'],'user_id':user.pk},status=status.HTTP_200_OK)
-    
+"""    
+        
+@throttle_classes([AnonRateThrottle])
+@api_view(["POST"])
+@permission_classes([])
+@csrf_protect
+def Login(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    user = authenticate(request, username=username,password=password)
+    if user and user.is_active:
+        login(request,user)
+        token,_ = Token.objects.get_or_create(user=user)
+        return JsonResponse({'token':token.key,'user':user.username,'user_id':user.pk},status=200)
+    else:
+        return JsonResponse({'error':'Invalid Credentials'},status=404)
 
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])    
+@permission_classes([IsAuthenticated]) 
 class LogoutView(APIView):
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     def delete(self, request):
         user=User.objects.filter(username=request.data.get('username')).first()
         # Get the user's token
         token = Token.objects.get(user=user)
         # Delete the token
         token.delete()
+        logout(request)
         return Response({'success': 'Logged out successfully'}, status=status.HTTP_200_OK)
 
-class session_view(APIView):
-    throttle_classes=[UserRateThrottle]
-    authentication_classes= [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-    def get(self,request,format=None):
-        return JsonResponse({'isAuthenticated':True},status=200)
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@csrf_exempt
+@api_view(['GET'])
+def GetSession(request):
+    return JsonResponse({'isAuthenticated':True},status=status.HTTP_200_OK)        
 
 class RegisterView(APIView):
+    permission_classes=[AllowAny]
     throttle_classes=[AnonRateThrottle]
     serializer_class=UserSerializer
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -97,8 +123,13 @@ class RegisterView(APIView):
                 name=serializer.validated_data.get('name',None)
                   # Optional if you have username field
             )
+            activation_key = generate_random_string(16)
+            key = SignupKey.objects.create(key=activation_key,user=user)
+            if not key:
+                return Response({'error':'Something went wrong'},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            link = "https://reuplan.up.railway.app/#/activate/"+activation_key
             subject="Bienvenidx a ReuPlan"
-            message="Tu cuenta de ReuPlan ha sido creada con éxito, tu nombre de usuario es "+serializer.validated_data['username']+"."
+            message="Hola "+serializer.validated_data.get('username')+" !\n"+"Tu cuenta de ReuPlan ha sido creada con éxito, para activarla haz click en el siguiente enlace :\n"+link+"\n\n"+"Esperamos que reuplan te sea útil!"
             email=serializer.validated_data['email']
             recipient_list = [email]
             send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
@@ -123,11 +154,14 @@ class EditProfile(APIView):
         return Response({'error':'Not possible to change information'}, status=status.HTTP_400_BAD_REQUEST)
 
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated]) 
+@permission_classes([IsAuthenticated])
 class CreateEvent(APIView):
     throttle_classes=[UserRateThrottle]
     serializer_class = EventoSerializer
-    def post(self, request,format=None):
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    def post(self, request, format=None):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():   
             # Create an Evento instance
@@ -161,7 +195,7 @@ class CreateEvent(APIView):
             return Response({"msg": "Evento creado satisfactoriamente", "id": evento.id}, status=status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-        
+
     def patch(self,request,format=None):
             # Create an Evento instance
             evento = Evento.objects.filter(pk=request.data.get('idEvento')).first()
@@ -197,39 +231,42 @@ class CreateEvent(APIView):
                 return Response({'error':'Error al editar el evento'},status=status.HTTP_400_BAD_REQUEST)
 
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated]) 
-class Events(generics.ListAPIView):
-    throttle_classes=[UserRateThrottle]
-    queryset = Evento.objects.all()
-    serializer_class = EventoSerializer
-
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated]) 
-def GetOwnEvents(request,user_id):
-    events = Evento.objects.filter(organizador_id=user_id)
-    if events is None:
-        return JsonResponse({'error': 'No events not found for this user'}, status=404)
-    serialized_events = [EventoSerializer(event).data for event in events]
-    return JsonResponse({'events':serialized_events}, status=200)
+@permission_classes([IsAuthenticated])
+@throttle_classes([UserRateThrottle])
+@api_view(["GET"])
+def Events(request):
+    user =  User.objects.filter(username=request.user).first()
+    if user is None:
+        return HttpResponseForbidden('No user defined')
+    events = Evento.objects.all()
+    parsed_events = [EventoSerializer(evento).data for evento in events]
+    return JsonResponse({'events':parsed_events}, status=status.HTTP_200_OK)
 
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def GetInvitedEvents(request,user_id):
-    invitaciones = Invitacion.objects.filter(invitado=user_id)
-    if invitaciones is None:
-        return JsonResponse({'error': 'No invitations found for this user'}, status=404)
-    eventos = [invitacion.evento for invitacion in invitaciones]
-    serialized_events = [EventoSerializer(evento).data for evento in eventos]
-    return JsonResponse({"events":serialized_events},status=200)
-
-
-
+class GetOwnEvents(APIView):
+    throttle_classes=[UserRateThrottle]
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    def get(self,request,format=None):
+        user = request.user
+        if user is None:
+            return Response({'error':'No user found'}, status=status.HTTP_404_NOT_FOUND)
+        events = Evento.objects.filter(organizador_id=user.id)
+        if events is None:
+            return Response({'error': 'No events not found for this user'}, status=status.HTTP_404_NOT_FOUND)
+        serialized_events = [EventoSerializer(event).data for event in events]
+        return Response({'events':serialized_events}, status=status.HTTP_200_OK)
 
 @throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated]) 
-def GetEventDetails(request,event_id):
-    event = Evento.objects.filter(id=event_id).first()
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+@csrf_protect
+def GetEventDetails(request): #Gets all the info to build an event page (details, invitations, responses, rejections)
+    event = Evento.objects.filter(id=request.data.get('event_id')).first()
+
     if event is None:
         return JsonResponse({'error': 'Event not found'}, status=404)
     else:
@@ -260,10 +297,12 @@ def GetEventDetails(request,event_id):
             'rechazos':rejections_list_serialized,
         })
 
+"""
 @throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])      
-def EventOrgData(request,event_id): 
+@permission_classes([IsAuthenticated])
+@api_view(["GET"])
+def EventOrgData(request,event_id):
     evento = Evento.objects.filter(id=event_id).first()
     if evento:
         detalles_organizador = {
@@ -273,10 +312,15 @@ def EventOrgData(request,event_id):
         return JsonResponse({"data": detalles_organizador}, status=status.HTTP_200_OK)
     else:
         return JsonResponse({"error": "Event not found"}, status=status.HTTP_404_NOT_FOUND)
+"""
+
 
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 class Invite(APIView):
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     throttle_classes=[UserRateThrottle]
     def post(self, request):
         user = User.objects.filter(Q(email=request.data.get('invitado')) | Q(username=request.data.get('invitado'))).first()
@@ -306,8 +350,10 @@ class Invite(APIView):
 @throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def ToggleInviteQuality(request,invite_id):
-    invite=Invitacion.objects.filter(id=invite_id).first()
+@api_view(["POST"])
+@csrf_protect
+def ToggleInviteQuality(request): #Changes the "imprescindicible" status of an invitee
+    invite=Invitacion.objects.filter(id=request.data.get('invite_id')).first()
     if invite:
         invite.imprescindible=not invite.imprescindible
         invite.save()
@@ -318,8 +364,10 @@ def ToggleInviteQuality(request,invite_id):
 @throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def DeleteInvite(request, invite_id):
-    invite = Invitacion.objects.filter(id=invite_id).first()
+@api_view(['DELETE'])
+@csrf_protect
+def DeleteInvite(request): #Deletes an invitation given its ID
+    invite = Invitacion.objects.filter(id=request.data.get('invite_id')).first()
     if invite:
         invite.delete()
         return JsonResponse({"msg": "Invitación eliminada"}, status=200)       
@@ -330,8 +378,10 @@ def DeleteInvite(request, invite_id):
 @throttle_classes([UserRateThrottle]) 
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def DeleteEvent(request,event_id):
-    event = Evento.objects.filter(pk=event_id).first()
+@api_view(['DELETE'])
+@csrf_protect
+def DeleteEvent(request): #Delets an event given its ID
+    event = Evento.objects.filter(pk=request.data.get('event_id')).first()
     if event is not None:
         event.delete()
         return JsonResponse({'msg':'Evento eliminado satisfactoriamente'},status=200)
@@ -341,8 +391,9 @@ def DeleteEvent(request,event_id):
 @throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated]) 
-def GetUserParticipationDetails(request, user_id):
-    user = User.objects.filter(id=user_id).first()
+@api_view(['GET'])
+def GetUserParticipationDetails(request): #Returns the invitations, rejections and responses from the logged in user
+    user = User.objects.filter(username=request.user).first()
     if user is None:
         return JsonResponse({'error': 'User not found'}, status=404)
     else:
@@ -362,7 +413,6 @@ def GetUserParticipationDetails(request, user_id):
         for invitation in invitations:
             events.append(EventoSerializer(invitation.evento).data)
 
-        
         # Return JSON response containing user details and participation details
         return JsonResponse({
             'user': user_serialized,
@@ -375,8 +425,11 @@ def GetUserParticipationDetails(request, user_id):
 @throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated]) 
-class Schedule(APIView):
+class Schedule(APIView): #Creates a response for an event that is a schedule for its calendar
     serializer_class = RespuestaSerializer
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     def post(self, request):
         serializer=self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -400,29 +453,27 @@ class Schedule(APIView):
             
             return Response({'msg':'horario agregado satisfactoriamente'},status=status.HTTP_201_CREATED)
 
-    def get(self, request):
-        schedules = Respuesta.objects.all()
-        print(schedules)
-        serialized_schedules=[self.serializer_class(schedule).data for schedule in schedules]
-        return Response(serialized_schedules,status=status.HTTP_200_OK)
-
 @throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-def DeleteSchedule(request,schedule_id):
-    schedule = Respuesta.objects.filter(pk=schedule_id).first()
+@api_view(['DELETE'])
+@csrf_protect
+def DeleteSchedule(request):
+    schedule = Respuesta.objects.filter(pk=request.data.get('schedule_id')).first()
     if schedule is not None:
         schedule.delete()
-        return JsonResponse({"msg": "Horario eliminado"}, status=200)       
-            
+        return JsonResponse({"msg": "Horario eliminado"}, status=200)
     else:
         return JsonResponse({"error": "Horario no encontrado"}, status=404)
 
 @throttle_classes([UserRateThrottle])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])     
-class Rejection(APIView):
+class Rejection(APIView): #Creates a rejection object from a user for an event 
     serializer_class = RechazadoSerializer
+    @method_decorator(csrf_protect)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     def post(self, request):
         serializer=self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -438,24 +489,14 @@ class Rejection(APIView):
                 return Response({'msg':'Rechazo agregado exitosamente, horarios existentes eliminados'})
 
             return Response({'msg':'Rechazo agregado satisfactoriamente'},status=status.HTTP_201_CREATED)
-
-    def get(self, request):
-        rejections = Rechazado.objects.all()
-        print(rejections)
-        serialized_rejections=[self.serializer_class(rejection).data for rejection in rejections]
-        return Response(serialized_rejections,status=status.HTTP_200_OK)
-
-@throttle_classes([UserRateThrottle])
-@authentication_classes([TokenAuthentication])
-@permission_classes([IsAuthenticated])  
-def ClearEventos(request):
-    eventos=Evento.objects.all()
-    eventos.delete()
-    return JsonResponse({'msg':'TODOS LOS EVENTOS HAN SIDO ELIMINADOS'})
-
+    
 @throttle_classes([AnonRateThrottle])
 class CreateRecoveryKey(APIView):
+    permission_classes = [AllowAny]
     serializer_class = RecoveryKeySerializer
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
     def post(self, request):
         user = User.objects.filter(username=request.data.get('user')).first()
         if user is None:
@@ -463,7 +504,7 @@ class CreateRecoveryKey(APIView):
         existing_keys = RecoveryKey.objects.filter(user=user).first()
         if existing_keys:
             existing_keys.delete()
-        key = generate_random_string()
+        key = generate_random_string(8)
         RecoveryKey.objects.create(key=key,user=user)
         subject="Reuplan: Recuperación de contraseña"
         message="Hola! Solicitaste un cambio de contraseña en ReuPlan para la cuenta asociada a este correo. Ingresa el código "+str(key)+".\n\nSi no has solicitado este cambio, ignora este correo."
@@ -475,6 +516,7 @@ class CreateRecoveryKey(APIView):
 @throttle_classes([AnonRateThrottle])
 class RecoveryAttempt(APIView):
     serializer_class = RecoveryKeySerializer
+    permission_classes = [AllowAny]
     def post (self,request):
         entered_key = request.data.get('key')
         user = User.objects.filter(username=request.data.get('username')).first()
@@ -511,27 +553,63 @@ def Contact(request):
     return Response({'message':'Email sent succesfully'},status=status.HTTP_200_OK)
 
 @throttle_classes([AnonRateThrottle])
-@csrf_exempt
-@api_view(["POST"])
-def EmailUsername(request):
-    requested_email=request.data.get('email')
-    user=User.objects.filter(email=requested_email).first()
-    if user is not None:
-        message="Hola, has solicitado recuperar tu nombre de usuario en ReuPlan.\n\n El nombre de usuario es: "+str(user.username)+".\n"+"\nSi deseas cambiar tu contraseña, utiliza ahora este nombre de usuario para solicitar el cambio."
-        subject="Reuplan: Recuperación de nombre de usuario"
-        email=requested_email
-        recipient_list = [email]
-        send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
-    return Response({'message':'If the account exists, an email will be sent'},status=status.HTTP_200_OK)
+class EmailUsername(APIView):
+    permission_classes = [AllowAny]
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    def post (self,request):
+        requested_email=request.data.get('email')
+        user=User.objects.filter(email=requested_email).first()
+        if user is not None:
+            message="Hola, has solicitado recuperar tu nombre de usuario en ReuPlan.\n\n El nombre de usuario es: "+str(user.username)+".\n"+"\nSi deseas cambiar tu contraseña, utiliza ahora este nombre de usuario para solicitar el cambio."
+            subject="Reuplan: Recuperación de nombre de usuario"
+            email=requested_email
+            recipient_list = [email]
+            send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
+        return Response({'message':'If the account exists, an email will be sent'},status=status.HTTP_200_OK)
+
+
+@throttle_classes([AnonRateThrottle])
+class PasswordRecovery(APIView):
+    permission_classes = [AllowAny]
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    def patch (self,request):
+        password=request.data.get('password')
+        username=request.data.get('username')
+        user=User.objects.filter(username=username).first()
+        user.set_password(password)
+        user.save()
+        return Response({'message':'Password changed succesfully'},status=status.HTTP_200_OK)
+
+@throttle_classes([AnonRateThrottle])
+class AccountActivation(APIView):
+    permission_classes = [AllowAny]
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    def post (self,request):
+        requested_key=request.data.get('key')
+        key = SignupKey.objects.filter(key=requested_key).first()
+        if key is not None:
+            if timezone.now() - key.created > datetime.timedelta(hours=24):
+                key.delete()
+                return Response({'error':'Key expired'},status=status.HTTP_400_BAD_REQUEST)
+            user = key.user
+            user.is_active=True
+            user.save()
+            key.delete()
+            return Response({'message':'Account activated successfully'},status=status.HTTP_200_OK)
+        else: return Response({'error':'Key not found'},status=status.HTTP_404_NOT_FOUND)
+
 
 @throttle_classes([AnonRateThrottle])
 @csrf_exempt
-@api_view(["PATCH"])
-def PasswordRecovery(request):
-    password=request.data.get('password')
-    username=request.data.get('username')
+@api_view(["GET"])
+def delete_account(request,username):
     user=User.objects.filter(username=username).first()
-    user.set_password(password)
-    user.save()
-    return Response({'message':'Password changed succesfully'},status=status.HTTP_200_OK)
-
+    if user is not None:
+        user.delete()
+        return Response({'message':'Account deleted successfully'},status=status.HTTP_200_OK)

@@ -4,36 +4,43 @@ import { Link, useNavigate } from "react-router-dom";
 import { Context } from "../store/context";
 import toast from "react-hot-toast";
 
+function getCsrfToken() {
+    return document
+      .querySelector('meta[name="csrf-token"]')
+      .getAttribute("content");
+}
+
+
+const csrfToken = getCsrfToken();
 
 
 const EventList = () => {
   const backendURL =  import.meta.env.DEV ? import.meta.env.VITE_APP_BACKEND_URL : ""
-
   const { store, actions } = useContext(Context);
   const navigate = useNavigate();
   const [loaded, setLoaded] = useState(false);
   const [eventos, setEventos] = useState([]);
   const [eventosAceptados, setEventosAceptados] = useState([]);
   const [eventosRechazados, setEventosRechazados] = useState([]);
-  const [eventosPendientesFiltrados, setEventosPendientesFiltrados] = useState(
-    []
-  );
+  const [eventosPendientesFiltrados, setEventosPendientesFiltrados] = useState([]);
   const [eventosOrganizadosPorMi, setEventosOrganizadosPorMi] = useState([]);
 
+ 
   const fetchData = async () => {
     try {
       const [eventsResponse, participationResponse] = await Promise.all([
         fetch(backendURL+"api/event/all", {
           method: "GET",
+          credentials:'include',
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
         }),
-        fetch(backendURL+"api/user/" +
-            localStorage.getItem("reuPlanUserID") +
-            "/participation",
+        fetch(backendURL+"api/user/participation",
           {
+            credentials:'include',
             headers: {
               "Content-type": "application/json",
               Authorization: "Token " + localStorage.getItem("reuPlanToken"),
@@ -48,7 +55,7 @@ const EventList = () => {
           participationResponse.json(),
         ]);
 
-        setEventos(eventsData);
+        setEventos(eventsData.events);
         const {
           emitted_rejections,
           responses,

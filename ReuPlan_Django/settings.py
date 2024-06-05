@@ -43,8 +43,8 @@ if os.getenv("WORKING_MODE") == "development":
 else:
     DEBUG = False
 
+ALLOWED_HOSTS =['https://www.reuplan.lol', 'https://reuplan.lol','https://reuplan.up.railway.app','localhost','127.0.0.1']
 
-ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -67,12 +67,12 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'api.User'
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -98,10 +98,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ReuPlan_Django.wsgi.application'
 
-
-
 DATABASES = {'default':dj_database_url.config(default=os.getenv('DATABASE_URL'))}
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -143,30 +140,42 @@ imported_cors_from_env = os.getenv("CORS_ORIGINS")
 parsed_cors_from_env = [origin.strip() for origin in imported_cors_from_env.split(',') if origin.strip()]
 
 if os.getenv("WORKING_MODE") == "development":
-    CORS_ALLOW_ALL_ORIGINS = True
     print("DEVELOPMENT MODE ON")
+    CORS_ALLOW_ALL_ORIGINS = True
 else:
-    CORS_ALLOWED_ORIGINS = parsed_cors_from_env
     print("PRODUCTION MODE ON")
+    CORS_ALLOWED_ORIGINS = parsed_cors_from_env
+
+CORS_ALLOWED_ORIGINS = parsed_cors_from_env
+
+CORS_ALLOW_HEADERS = [
+    'content-type',
+    'x-csrftoken',
+    "Authorization"
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
-    ),
-
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
         'rest_framework.throttling.UserRateThrottle'
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '20/min',
-        'user': '500/hour'
+        'anon': '40/min',
+        'user': '1000/hour'
     }
 
 }
@@ -182,26 +191,38 @@ EMAIL_TIMEOUT = 10
 EMAIL_SSL_CERTFILE = None
 EMAIL_SSL_KEYFILE = None    
 
-CSRF_COOKIE_SAMESITE = 'Strict'
-SESSION_COOKIE_SAMESITE = 'Strict'
-CSRF_COOKIE_HTTPONLY = True
-SESSION_COOKIE_HTTPONLY = True
+if os.getenv("WORKING_MODE") == "development":
+
+    CSRF_COOKIE_SAMESITE = 'None'
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_HTTPONLY = False
+    SESSION_COOKIE_HTTPONLY = False
+    CSRF_COOKIE_SECURE = False
+    CSRF_COOKIE_DOMAIN = '127.0.0.1'
+else:
+    CSRF_COOKIE_SAMESITE = 'Strict'
+    SESSION_COOKIE_SAMESITE = 'Strict'
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_SECURE = True
+
+CORS_ALLOW_CREDENTIALS = True
+
 
 #For PRODUCTION BOTH TRUE
-# CSRF_COOKIE_HTTPONLY = False
+# CSRF_COOKIE_HTTPONLY = True
 # SESSION_COOKIE_HTTPONLY = True
+#CSRF_COOKIE_SECURE = True
 
 #FOR DEV
 # CSRF_COOKIE_HTTPONLY = False
 # SESSION_COOKIE_HTTPONLY = True
+# CSRF_COOKIE_SECURE = False
 
 STATICFILES_DIRS = [BASE_DIR.joinpath('frontend','dist','assets')]
 STATIC_ROOT = BASE_DIR.joinpath('staticfiles')
 
-if os.getenv("WORKING_MODE") == "development":
-    CSRF_TRUSTED_ORIGINS = []
-else:
-    CSRF_TRUSTED_ORIGINS = ["https://reuplan.up.railway.app","https://www.reuplan.lol","https://reuplan.lol"]
+CSRF_TRUSTED_ORIGINS = ["http://127.0.0.1:8000/","http://127.0.0.1:5173","http://localhost:5173","https://reuplan.up.railway.app","https://www.reuplan.lol","https://reuplan.lol","http://192.168.1.11:5173/"]
 
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 

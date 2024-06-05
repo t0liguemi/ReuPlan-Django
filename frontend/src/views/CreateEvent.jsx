@@ -111,6 +111,7 @@ function CreateEvent() {
               <div className="col-sm d-flex align-items-center my-2">
                 <h4 className="me-2 fw-semibold">Lugar:</h4>
                 <input
+                required
                   type="text"
                   className="form-control"
                   placeholder="lugar(presencial) / app(online)"

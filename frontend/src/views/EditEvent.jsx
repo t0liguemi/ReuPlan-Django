@@ -38,7 +38,7 @@ function EditEvent() {
           actions.getEvent(eventID);
           store.loggedIn = true;
           if (store.fetchedEvent.organizador.id != currentUser) {
-            navigate("/eventList");
+            navigate("/dashboard");
             toast.error("No tienes acceso a este sitio");
           }
         }
@@ -132,6 +132,7 @@ function EditEvent() {
                 <div className="col-sm my-2 d-flex align-items-center">
                   <h4 className="me-2 fw-semibold">Lugar:</h4>
                   <input
+                    required
                     type="text"
                     className="form-control"
                     placeholder="lugar(presencial) / app(online)"
@@ -341,12 +342,12 @@ function EditEvent() {
                 <br />
               </h5>
               <div className="py-4">
-                <ul className="w-75 my-2 list-group list-group-flush">
+                <ul className="w-75 my-2 list-group list-group-flus bg-transparent border-0">
                   {store.fetchedEvent.invitaciones.length > 0 &&
                     store.fetchedEvent.invitaciones.map((invitacion) => {
                       return (
                         <li
-                          className="list-group-item fs-4 fw-semibold"
+                          className="list-group-item fs-4 fw-semibold bg-transparent border-0"
                           key={"user_" + invitacion.id}
                         >
                           <div className="row d-flex align-items-center">

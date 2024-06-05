@@ -4,6 +4,17 @@
   letter-spacing: -1px;
 }
 
+.eventCardComponent:hover {
+  outline: 3px solid #f18805;
+}
+
+.custom-tooltip {
+  --bs-tooltip-bg: black;
+  --bs-tooltip-opacity: 1;
+  --bs-tooltip-color: white;
+  --bs-tooltip-border-radius: 0.375rem;
+}
+
 /* f0a202 f18805 d95d39 0e1428 7b9e89 COLORES REUPLAN*/
 .backgroundColor {
   background: linear-gradient(320deg, #d4d7d9 0%, #ffffff 100%);

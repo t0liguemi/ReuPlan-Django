@@ -14,7 +14,7 @@ function Login() {
 
   useEffect(() => {
     if (store.loggedIn) {
-      navigate("/eventList");
+      navigate("/dashboard");
     } else {
       setReadyForRender(true);
     }

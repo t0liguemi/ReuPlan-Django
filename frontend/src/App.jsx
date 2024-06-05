@@ -23,13 +23,16 @@ import Recovery from "./views/Recovery.jsx";
 import Contact from "./views/Contact.jsx";
 import Dashboard from "./views/Dashboard.jsx";
 import UserEvents from "./views/UserEvents.jsx";
+import InvitedEvents from "./views/InvitedEvents.jsx";
+import RejectedEvents from "./views/RejectedEvents.jsx";
+import AcceptedEvents from "./views/AcceptedEvents.jsx";
+import Activate from "./views/Activate.jsx";
 
 function App() {
    const { store, actions } = useContext(Context);
+
    useEffect(() => {
-      if (store.loggedIn === false) {
-         actions.getSession();
-      }
+      
    }, []);
 
    return (
@@ -42,20 +45,24 @@ function App() {
                <Route path="/login" Component={Login} />
                <Route
                   path="/signin"
-                  Component={store.loggedIn ? EventList : SignIn}
+                  Component={store.loggedIn ? Dashboard : SignIn}
                />
-               <Route path="/dashboard" Component={store.loggedIn ? Dashboard:Login} />
+               <Route path="/dashboard" Component={Dashboard} />
                <Route path="/profile" Component={Profile} />
                <Route path="/" Component={Welcome} />
                <Route path="/create" Component={CreateEvent} />
                <Route path="/eventList" Component={EventList} />
-               <Route path="/events/own" Component={store.loggedIn? UserEvents:Login} />
+               <Route path="/events/own" Component={UserEvents} />
+               <Route path="/events/invited" Component={InvitedEvents} />
+               <Route path="/events/rejected" Component={RejectedEvents} />
+               <Route path="/events/accepted" Component={AcceptedEvents} />
                <Route path="/event/:eventID">
                   <Route index Component={Evento} />
                   <Route path="edit" Component={EditEvent} />
                </Route>
                <Route path="/recovery" Component={Recovery} />
                <Route path="/contact" Component={Contact} />
+               <Route path="/activate/:key" Component={Activate} />
                <Route render={() => <h1>Not found!</h1>} />
             </Routes>
             <DemoModal />

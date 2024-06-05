@@ -25,7 +25,7 @@ function LoggedInNavbar() {
 
   useEffect(() => {
     window.addEventListener("resize", handleResize);
-    actions.userInvitesAndResponses();
+    // actions.userInvitesAndResponses();
     if (store.pending > 0) {
       toast("Tienes invitaciones pendientes");
     }
@@ -58,7 +58,7 @@ function LoggedInNavbar() {
                     ? "pending nav-link"
                     : "nav-link"
                 }
-                to="/eventList"
+                to="/dashboard"
               >
                 Eventos
                 {store.pending > 0 ? (
