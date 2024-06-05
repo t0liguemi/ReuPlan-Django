@@ -24,8 +24,6 @@ const injectContext = (PassedComponent) => {
     useEffect(() => {
         state.actions.getSession()
         state.actions.testBackend();
-        state.actions.getUserEvents();
-        state.actions.userInvitesAndResponses();
 
 
       /**

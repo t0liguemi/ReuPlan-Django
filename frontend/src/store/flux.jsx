@@ -71,6 +71,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
       },
       getSession: () => {
+        const actions = getActions();
         return fetch(backendURL + "api/auth", {
           credentials: "include",
           headers: {
@@ -95,6 +96,8 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((data) => {
             if (data && data.isAuthenticated) {
               setStore({ loggedIn: true });
+              actions.getUserEvents();
+              actions.userInvitesAndResponses();
               return true;
             }
           })
