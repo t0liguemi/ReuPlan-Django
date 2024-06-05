@@ -119,6 +119,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         });
       },
       getUserEvents: () => {
+        const store = getStore();
         if (!store.loggedIn){return}
         fetch(backendURL + "api/event/user", {
           method: "GET",
