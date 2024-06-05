@@ -1013,6 +1013,8 @@ const getState = ({ getStore, getActions, setStore }) => {
             } else if (resp.status == 404 || resp.status == 401) {
               toast.error("Credenciales incorrectas");
             } else if (resp.status == 200) {
+              actions.getUserEvents();
+              actions.userInvitesAndResponses();
               toast("Bienvenidx de vuelta!");
               return resp.json();
             }
