@@ -54,8 +54,8 @@ function Footer() {
 					<Link
 						onClick={() => {
 							toast("Es gratis!", { position: "top-left", icon: "👏" });
-							toast.success("Es gratis!", {
-								position: "top-center",
+							toast("Es gratis!", {
+								position: "bottom-right",
 								icon: "👏",
 							});
 							toast.error("Es gratis!", { icon: "👏" });
@@ -63,7 +63,7 @@ function Footer() {
 								position: "bottom-center",
 								icon: "👏",
 							});
-							toast("Es gratis!", { position: "top-right", icon: "👏" });
+							toast.success("Es gratis!", { position: "top-right", icon: "👏" });
 							toast.error("Es gratis!", {
 								position: "bottom-left",
 								icon: "👏",

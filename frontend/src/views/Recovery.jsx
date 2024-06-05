@@ -1,22 +1,33 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState, useContext } from "react";
 import { toast } from "react-hot-toast";
-import { useNavigate   } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Context } from "../store/context";
+
+function getCsrfToken() {
+  return document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute("content");
+}
+
+const csrfToken = getCsrfToken();
+
 function Recovery() {
   const navigate = useNavigate();
   const backendURL = import.meta.env.DEV
     ? import.meta.env.VITE_APP_BACKEND_URL
     : "";
-  const {store,actions} = useContext(Context)
+  const { store, actions } = useContext(Context);
   const [recoveryStage, setRecoveryStage] = useState("start");
   const [recoveringUsername, setRecoveringUsername] = useState("");
 
   function handleSubmitUsername(e) {
     fetch(backendURL + "api/recovery/key/create", {
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-type": "application/json",
+        "X-CSRFToken": csrfToken,
       },
       body: JSON.stringify({
         user: e.target.recoveryUsername.value,
@@ -28,7 +39,9 @@ function Recovery() {
         );
         setRecoveryStage("userFound");
         setRecoveringUsername(e.target.recoveryUsername.value);
-      }else {toast.error("Usuario no encontrado")}
+      } else {
+        toast.error("Usuario no encontrado");
+      }
     });
   }
 
@@ -57,6 +70,7 @@ function Recovery() {
         if (response.status === 200) {
           toast("Código de recuperación correcto");
           setRecoveryStage("codeSuccess");
+          return response.json();
         }
       })
       .then((data) => {
@@ -116,17 +130,17 @@ function Recovery() {
       }
       if (resp.status == 200) {
         toast.success("Datos de cuenta actualizados");
-        navigate("/login")
+        navigate("/login");
         return resp.json();
       }
     });
   }
 
-  useEffect (()=>{
-    if (store.loggedIn){
-      navigate("/")
+  useEffect(() => {
+    if (store.loggedIn) {
+      navigate("/");
     }
-  },[])
+  }, []);
 
   return (
     <div className="container mx-auto my-auto">
@@ -173,7 +187,11 @@ function Recovery() {
             >
               <label className="" htmlFor="recoveryEmail">
                 Dirección de email
-                <input className="form-control my-2" id="recoveryEmail" required />
+                <input
+                  className="form-control my-2"
+                  id="recoveryEmail"
+                  required
+                />
               </label>
               <button
                 className="py-2 my-2 mx-2 btn btn-primary fw-semibold"

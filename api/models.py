@@ -26,7 +26,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     last_login = models.DateTimeField(blank=True,null=True)
 
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
 
     groups = models.ManyToManyField(
         'auth.Group',
@@ -101,3 +101,8 @@ class RecoveryKey(models.Model):
     key = models.CharField(max_length=8)
     attempts = models.IntegerField(default=0)
     successful_attempt = models.BooleanField(default=False)
+
+class SignupKey(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created = models.DateTimeField(auto_now_add=True)
+    key = models.CharField(max_length=16)

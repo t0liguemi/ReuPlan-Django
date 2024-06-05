@@ -1,9 +1,17 @@
 import toast from "react-hot-toast";
 
-const backendURL =
-  import.meta.env.DEV
-    ? import.meta.env.VITE_APP_BACKEND_URL
-    : "";
+function getCsrfToken() {
+    return document
+      .querySelector('meta[name="csrf-token"]')
+      .getAttribute("content");
+  }
+
+
+const csrfToken = getCsrfToken();
+
+const backendURL = import.meta.env.DEV
+  ? import.meta.env.VITE_APP_BACKEND_URL
+  : "";
 
 const getState = ({ getStore, getActions, setStore }) => {
   return {
@@ -44,11 +52,12 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
     },
     actions: {
+      fetchCsrfToken: () => {},
       modalToggle: (bool) => {
         setStore({ modalView: bool });
       },
       testBackend: async () => {
-        if (import.meta.env.DEV) {  
+        if (import.meta.env.DEV) {
           try {
             const response = await fetch(backendURL + "api/test");
             if (response.status != 200) {
@@ -63,7 +72,7 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       getSession: () => {
         return fetch(backendURL + "api/auth", {
-          method: "GET",
+          credentials: "include",
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
           },
@@ -86,12 +95,53 @@ const getState = ({ getStore, getActions, setStore }) => {
           .then((data) => {
             if (data && data.isAuthenticated) {
               setStore({ loggedIn: true });
+              return true;
             }
           })
           .catch((error) => {});
       },
+      attemptActivation: (key,navigate) => {
+        const actions = getActions();
+        fetch(backendURL + "api/user/activation", {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({ key: key }),
+        }).then((response) => {
+          if (response.status === 200) {
+            actions.logout(navigate)
+            toast.success("Tu cuenta ha sido activada");
+          } else {
+            toast.error("Error al activar tu cuenta");
+            navigate("/login")
+          }
+        });
+      },
+      getUserEvents: () => {
+        fetch(backendURL + "api/event/user", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+          },
+        })
+          .then((res) => {
+            if (res.status == 200) {
+              return res.json();
+            }
+          })
+          .then((data) => {
+            if (data) {
+              setStore({ ownEvents: data.events });
+            }
+          });
+      },
       findPending: () => {
+        //Finds pending, rejected and accepted events COUNT ONLY, NOT EVENT DETAILS
         const store = getStore();
+        let rejectedCounter = 0;
+        let acceptedCounter = 0;
         let pending = store.currentUsersInvitations.length;
         for (let invitacion of store.currentUsersInvitations) {
           if (
@@ -105,22 +155,85 @@ const getState = ({ getStore, getActions, setStore }) => {
             pending -= 1;
           }
         }
-        setStore({ pending });
+        store.currentUsersInvitations.forEach((invite) => {
+          if (
+            store.currentUsersRejections.some(
+              (rejection) => invite.evento === rejection.evento
+            )
+          ) {
+            rejectedCounter += 1;
+          }
+        });
+        store.currentUsersInvitations.forEach((invite) => {
+          if (
+            store.currentUsersResponses.some(
+              (response) => invite.evento === response.evento
+            )
+          ) {
+            acceptedCounter += 1;
+          }
+        });
+        setStore({
+          rejectedCounter: rejectedCounter,
+          acceptedCounter: acceptedCounter,
+          pending: pending,
+        });
+      },
+      calculatePendingEvents: () => {
+        const store = getStore();
+        let calculatedPendingEvents = [];
+        store.currentUsersInvitedEvents.forEach((event) => {
+          if (
+            !store.currentUsersResponses.some(
+              (respuesta) => event.id == respuesta.evento
+            ) &&
+            !store.currentUsersRejections.some(
+              (rejection) => event.id == rejection.evento
+            )
+          ) {
+            calculatedPendingEvents.push(event);
+          }
+        });
+        setStore({ pendingEvents: calculatedPendingEvents });
+      },
+      calculateRejectedEvents: () => {
+        const store = getStore();
+        let calculatedRejectedEvents = [];
+        store.currentUsersInvitedEvents.forEach((event) => {
+          if (
+            store.currentUsersRejections.some(
+              (rejection) => event.id == rejection.evento
+            )
+          ) {
+            calculatedRejectedEvents.push(event);
+          }
+        });
+        setStore({ rejectedEvents: calculatedRejectedEvents });
+      },
+      calculateAcceptedEvents: () => {
+        const store = getStore();
+        let calculatedAcceptedEvents = [];
+        store.currentUsersInvitedEvents.forEach((event) => {
+          if (
+            store.currentUsersResponses.some(
+              (response) => event.id == response.evento
+            )
+          ) {
+            calculatedAcceptedEvents.push(event);
+          }
+        });
+        setStore({ acceptedEvents: calculatedAcceptedEvents });
       },
       userInvitesAndResponses: () => {
         const actions = getActions();
-        fetch(
-          backendURL +
-            "api/user/" +
-            localStorage.getItem("reuPlanUserID") +
-            "/participation",
-          {
-            headers: {
-              "Content-type": "application/json",
-              Authorization: "Token " + localStorage.getItem("reuPlanToken"),
-            },
-          }
-        )
+        fetch(backendURL + "api/user/participation", {
+          headers: {
+            "Content-type": "application/json",
+            Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
+          },
+          credentials: "include",
+        })
           .then((resp) => {
             if (resp.status === 429) {
               toast.error(
@@ -133,20 +246,28 @@ const getState = ({ getStore, getActions, setStore }) => {
             }
           })
           .then((data) => {
-            const currentUsersInvitations = data.received_invitations;
-            const currentUsersResponses = data.responses;
-            const currentUsersRejections = data.emitted_rejections;
-            setStore({
-              currentUsersInvitations,
-              currentUsersResponses,
-              currentUsersRejections,
-            });
-            actions.findPending();
+            if (data) {
+              const currentUsersInvitations = data.received_invitations;
+              const currentUsersResponses = data.responses;
+              const currentUsersRejections = data.emitted_rejections;
+              const currentUsersInvitedEvents = data.eventDetails;
+              setStore({
+                currentUsersInvitations,
+                currentUsersResponses,
+                currentUsersRejections,
+                currentUsersInvitedEvents,
+              });
+              actions.findPending();
+              actions.calculatePendingEvents();
+              actions.calculateRejectedEvents();
+              actions.calculateAcceptedEvents();
+            }
           })
           .catch((error) => {});
       },
       editUser: (e, navigate) => {
-        const passwordPattern = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]{10,}$/;
+        const passwordPattern =
+          /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]{10,}$/;
         const store = getStore();
         e.preventDefault();
         const actions = getActions();
@@ -175,6 +296,7 @@ const getState = ({ getStore, getActions, setStore }) => {
             headers: {
               "Content-type": "application/json",
               Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+              "X-CSRFToken": csrfToken,
             },
             body: JSON.stringify(answers),
           })
@@ -198,9 +320,13 @@ const getState = ({ getStore, getActions, setStore }) => {
             .catch((error) => {});
         }
       },
-      fetchCurrentUser: (id) => {
-        fetch(backendURL + "api/user/get/" + id, {
-          Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+      fetchCurrentUser: () => {
+        fetch(backendURL + "api/user", {
+          credentials: "include",
+          headers: {
+            Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
+          },
         })
           .then((resp) => {
             if (resp.status === 429) {
@@ -229,9 +355,11 @@ const getState = ({ getStore, getActions, setStore }) => {
         }
         fetch(backendURL + "api/event/create", {
           method: "PATCH",
+          credentials: "include",
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
           body: JSON.stringify({
             idEvento: id,
@@ -274,10 +402,15 @@ const getState = ({ getStore, getActions, setStore }) => {
           navigate("/eventList");
         }
         const actions = getActions();
-        fetch(backendURL + "api/event/get/" + eventID, {
+        fetch(backendURL + "api/event", {
+          method: "POST",
+          credentials: "include",
           headers: {
+            "Content-Type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
+          body: JSON.stringify({ event_id: eventID }),
         })
           .then((resp) => {
             if (resp.status === 404) {
@@ -308,8 +441,12 @@ const getState = ({ getStore, getActions, setStore }) => {
         const store = getStore();
         store.evento.respuestas = [];
         store.evento.rechazados = [];
-        store.evento.inicio = new Date(store.fetchedEvent.event.inicio+"T12:00:00");
-        store.evento.final = new Date(store.fetchedEvent.event.final+"T12:00:00");
+        store.evento.inicio = new Date(
+          store.fetchedEvent.event.inicio + "T12:00:00"
+        );
+        store.evento.final = new Date(
+          store.fetchedEvent.event.final + "T12:00:00"
+        );
         store.evento.idEvento = store.fetchedEvent.event.id;
         store.evento.lugar = store.fetchedEvent.event.lugar;
         store.evento.duracion = store.fetchedEvent.event.duracion;
@@ -416,6 +553,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
           body: JSON.stringify({ search_query: searchValue }),
         })
@@ -479,42 +617,15 @@ const getState = ({ getStore, getActions, setStore }) => {
         const hostData = store.fetchedEvent.organizador;
         setStore({ hostData });
       },
-
-      findEventRejections: (idEvento) => {
-        let { currentEventsRejections } = getStore();
-        fetch(backendURL + "api/rejections", {
-          method: "POST",
-          headers: {
-            "Content-type": "application/json",
-            Authorization: "Token " + localStorage.getItem("reuPlanToken"),
-          },
-          body: JSON.stringify({
-            idEvento: idEvento,
-          }),
-        })
-          .then((resp) => {
-            if (resp.status === 429) {
-              toast.error(
-                "Límite de solicitudes excedido, intentalo más tarde"
-              );
-              return;
-            } else if (resp.status == 200) {
-              return resp.json();
-            }
-          })
-          .then((data) => {
-            currentEventsRejections = data.data;
-            setStore({ currentEventsRejections });
-          })
-          .catch((error) => {});
-      },
       rejectInvite: (navigate) => {
         const actions = getActions();
         fetch(backendURL + "api/rejection", {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
           body: JSON.stringify({
             invitado: localStorage.getItem("reuPlanUserID"),
@@ -544,9 +655,11 @@ const getState = ({ getStore, getActions, setStore }) => {
         const actions = getActions();
         fetch(backendURL + "api/invite", {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
           body: JSON.stringify({
             invitado: inviteeID,
@@ -563,7 +676,10 @@ const getState = ({ getStore, getActions, setStore }) => {
             } else if (resp.status == 201) {
               toast.success("Usuario invitado exitosamente");
               actions.getEvent(localStorage.getItem("reuPlanCurrentEvent"));
-              actions.mainEventView(localStorage.getItem("reuPlanCurrentEvent"),navigate)
+              actions.mainEventView(
+                localStorage.getItem("reuPlanCurrentEvent"),
+                navigate
+              );
               return resp.json();
             } else if (resp.status == 409) {
               toast.error("Usuario ya invitado");
@@ -577,8 +693,15 @@ const getState = ({ getStore, getActions, setStore }) => {
       toggleImprescindible: (inviteID) => {
         const actions = getActions();
         const store = getStore();
-        fetch(backendURL + "api/invite/" + inviteID + "/toggle", {
-          Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+        fetch(backendURL + "api/invite/toggle", {
+          method: "POST",
+          headers: {
+            Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({ invite_id: inviteID }),
         })
           .then((resp) => {
             if (resp.status === 429) {
@@ -599,10 +722,17 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       deleteEvent: (id, navigate) => {
         const actions = getActions();
-        fetch(backendURL + "api/event/" + id + "/delete", {
+        fetch(backendURL + "api/event/delete", {
+          method: "DELETE",
+          credentials: "include",
           headers: {
+            "Content-Type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
+          body: JSON.stringify({
+            event_id: id,
+          }),
         })
           .then((resp) => {
             if (resp.status === 429) {
@@ -611,7 +741,7 @@ const getState = ({ getStore, getActions, setStore }) => {
               );
               return;
             } else if (resp.status == 200) {
-              navigate("/eventList");
+              navigate("/dashboard");
               toast("Evento eliminado");
               actions.findInviteesDetails();
               actions.userInvitesAndResponses();
@@ -623,10 +753,15 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       uninviteUser: (id) => {
         const actions = getActions();
-        fetch(backendURL + "api/invite/delete/" + id, {
+        fetch(backendURL + "api/invite/delete", {
+          credentials: "include",
+          method: "DELETE",
           headers: {
+            "content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"), //ENCONTRAR EVENTO ACA
+            "X-CSRFToken": csrfToken,
           },
+          body: JSON.stringify({ invite_id: id }),
         })
           .then((resp) => {
             if (resp.status === 429) {
@@ -645,11 +780,17 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       getEvent: (eventID) => {
         const actions = getActions();
-        fetch(backendURL + "api/event/get/" + eventID, {
-          method: "GET",
+        fetch(backendURL + "api/event", {
+          method: "POST",
+          credentials: "include",
           headers: {
+            "content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"), //ENCONTRAR EVENTO ACA
+            "X-CSRFToken": csrfToken,
           },
+          body: JSON.stringify({
+            event_id: eventID,
+          }),
         })
           .then((resp) => {
             if (resp.status === 429) {
@@ -674,6 +815,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
         })
           .then((resp) => {
@@ -728,11 +870,12 @@ const getState = ({ getStore, getActions, setStore }) => {
 
         fetch(backendURL + "api/event/create", {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
-
           body: JSON.stringify(nullified),
         })
           .then((resp) => {
@@ -759,19 +902,22 @@ const getState = ({ getStore, getActions, setStore }) => {
           .catch((error) => {});
       },
       logout: (navigate) => {
+        const store = getStore();
         navigate("/login");
-        const actions = getActions();
         fetch(backendURL + "api/logout", {
           method: "DELETE",
           headers: {
             "Content-type": "application/json",
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "X-CSRFToken": csrfToken,
           },
           body: JSON.stringify({
             username: localStorage.getItem("reuPlanUser"),
           }),
+          credentials: "include",
         });
-        toast("Haz cerrado sesión");
+        if (store.loggedIn){
+        toast("Haz cerrado sesión")}
         localStorage.removeItem("reuPlanUser");
         localStorage.removeItem("reuPlanToken");
         localStorage.removeItem("reuPlanUserID");
@@ -783,15 +929,17 @@ const getState = ({ getStore, getActions, setStore }) => {
         const usernamePattern = /^[a-zA-Z0-9]{8,}$/;
         const passwordPattern =
           /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[a-zA-Z\d\W_]{10,}$/;
-        if (!usernamePattern.test(e.target[1].value)) {
+        if (!usernamePattern.test(e.target.formUsername.value)) {
           toast.error(
             "El nombre de usuario solo puede contener minúsculas, mayúsculas y números."
           );
           return;
-        } else if (e.target[2].value != e.target[4].value) {
+        } else if (
+          e.target.formPassword.value != e.target.formPassword2.value
+        ) {
           toast.error("Las contraseñas no coincidien.");
           return;
-        } else if (!passwordPattern.test(e.target[2].value)) {
+        } else if (!passwordPattern.test(e.target.formPassword.value)) {
           toast.error(
             "La contraseña debe tener al menos 10 caracteres y contener al menos una letra mayúscula, un símbolo y un número."
           );
@@ -799,12 +947,16 @@ const getState = ({ getStore, getActions, setStore }) => {
         } else {
           fetch(backendURL + "api/user/create", {
             method: "POST",
-            headers: { "Content-type": "application/json" },
+            credentials: "include",
+            headers: {
+              "Content-type": "application/json",
+              "X-CSRFToken": csrfToken,
+            },
             body: JSON.stringify({
-              username: e.target[1].value,
-              password: e.target[2].value,
-              email: e.target[3].value,
-              name: e.target[5].value,
+              username: e.target.formUsername.value,
+              password: e.target.formPassword.value,
+              email: e.target.formEmail.value,
+              name: e.target.nameInput.value,
             }),
           })
             .then((resp) => {
@@ -818,7 +970,9 @@ const getState = ({ getStore, getActions, setStore }) => {
                 return resp.json();
               }
               if (resp.status == 201) {
-                toast.success("Cuenta creada satisfactoriamente!");
+                toast.success(
+                  "Cuenta creada satisfactoriamente! Revisa tu correo para activar tu cuenta!"
+                );
                 navigate("/login");
                 return resp.json();
               }
@@ -826,11 +980,9 @@ const getState = ({ getStore, getActions, setStore }) => {
             .then((data) => {
               if (data.error) {
                 toast.error("Código inválido o expirado");
-              }else
-              if (data.error && data.email) {
+              } else if (data.error && data.email) {
                 toast.error("Email inválido o en uso");
-              }else
-              if (data.error && data.username) {
+              } else if (data.error && data.username) {
                 toast.error("Nombre de usuario ya en uso");
               }
             })
@@ -841,8 +993,12 @@ const getState = ({ getStore, getActions, setStore }) => {
         const actions = getActions();
         e.preventDefault();
         fetch(backendURL + "api/login", {
+          credentials: "include",
           method: "POST",
-          headers: { "Content-type": "application/json" },
+          headers: {
+            "Content-type": "application/json",
+            "X-CSRFToken": csrfToken,
+          },
           body: JSON.stringify({
             username: e.target.form[0].value,
             password: e.target.form[1].value,
@@ -933,8 +1089,10 @@ const getState = ({ getStore, getActions, setStore }) => {
           toast.error("La hora final debe ser posterior a la de inicio!");
         } else {
           fetch(backendURL + "api/schedule", {
+            credentials: "include",
             method: "POST",
             headers: {
+              "X-CSRFToken": csrfToken,
               "Content-type": "application/json",
               Authorization: "Token " + localStorage.getItem("reuPlanToken"),
             },

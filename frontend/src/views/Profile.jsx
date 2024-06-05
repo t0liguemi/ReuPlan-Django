@@ -22,11 +22,10 @@ const Profile = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
-    actions.getSession();
     const fetchData = async () => {
       try {
         setDataLoaded(false);
-        await actions.fetchCurrentUser(currentUser);
+        await actions.fetchCurrentUser();
       } catch (error) {
         console.error("Error fetching user data:", error);
       } finally {

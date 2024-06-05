@@ -8,6 +8,7 @@ function Contact() {
 
   function handleSubmit(event) {
     fetch(backendURL + "api/contact", {
+      credentials:"include",
       method: "POST",
       headers: {
         "Content-type": "application/json",
