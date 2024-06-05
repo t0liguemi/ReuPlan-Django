@@ -1013,8 +1013,6 @@ const getState = ({ getStore, getActions, setStore }) => {
             } else if (resp.status == 404 || resp.status == 401) {
               toast.error("Credenciales incorrectas");
             } else if (resp.status == 200) {
-              actions.getUserEvents();
-              actions.userInvitesAndResponses();
               toast("Bienvenidx de vuelta!");
               return resp.json();
             }
@@ -1026,6 +1024,8 @@ const getState = ({ getStore, getActions, setStore }) => {
               localStorage.setItem("reuPlanToken", data.token);
               actions.getSession();
               setStore({ loggedIn: true });
+              actions.getUserEvents();
+              actions.userInvitesAndResponses();
               navigate("/");
             }
           })
