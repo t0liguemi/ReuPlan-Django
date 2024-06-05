@@ -227,7 +227,7 @@ const getState = ({ getStore, getActions, setStore }) => {
         setStore({ acceptedEvents: calculatedAcceptedEvents });
       },
       userInvitesAndResponses: () => {
-        const getStore = getStore();
+        const store = getStore();
         const actions = getActions();
         if (!store.loggedIn){return}
         fetch(backendURL + "api/user/participation", {
