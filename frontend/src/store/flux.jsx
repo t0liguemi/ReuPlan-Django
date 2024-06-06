@@ -1,11 +1,10 @@
 import toast from "react-hot-toast";
 
 function getCsrfToken() {
-    return document
-      .querySelector('meta[name="csrf-token"]')
-      .getAttribute("content");
-  }
-
+  return document
+    .querySelector('meta[name="csrf-token"]')
+    .getAttribute("content");
+}
 
 const csrfToken = getCsrfToken();
 
@@ -103,7 +102,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           })
           .catch((error) => {});
       },
-      attemptActivation: (key,navigate) => {
+      attemptActivation: (key, navigate) => {
         const actions = getActions();
         fetch(backendURL + "api/user/activation", {
           method: "POST",
@@ -113,17 +112,19 @@ const getState = ({ getStore, getActions, setStore }) => {
           body: JSON.stringify({ key: key }),
         }).then((response) => {
           if (response.status === 200) {
-            actions.logout(navigate)
+            actions.logout(navigate);
             toast.success("Tu cuenta ha sido activada");
           } else {
             toast.error("Error al activar tu cuenta");
-            navigate("/login")
+            navigate("/login");
           }
         });
       },
       getUserEvents: () => {
         const store = getStore();
-        if (!store.loggedIn){return}
+        if (!store.loggedIn) {
+          return;
+        }
         fetch(backendURL + "api/event/user", {
           method: "GET",
           credentials: "include",
@@ -232,7 +233,9 @@ const getState = ({ getStore, getActions, setStore }) => {
       userInvitesAndResponses: () => {
         const store = getStore();
         const actions = getActions();
-        if (!store.loggedIn){return}
+        if (!store.loggedIn) {
+          return;
+        }
         fetch(backendURL + "api/user/participation", {
           headers: {
             "Content-type": "application/json",
@@ -923,8 +926,9 @@ const getState = ({ getStore, getActions, setStore }) => {
           }),
           credentials: "include",
         });
-        if (store.loggedIn){
-        toast("Haz cerrado sesión")}
+        if (store.loggedIn) {
+          toast("Haz cerrado sesión");
+        }
         localStorage.removeItem("reuPlanUser");
         localStorage.removeItem("reuPlanToken");
         localStorage.removeItem("reuPlanUserID");

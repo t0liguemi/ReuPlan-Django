@@ -36,12 +36,9 @@ if __name__ == "__main__":
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
-if os.getenv("WORKING_MODE") == "development":
-    DEBUG = True
-else:
-    DEBUG = False
+DEBUG = False
 
-ALLOWED_HOSTS =['.reuplan.lol','.reuplan.up.railway.app']
+ALLOWED_HOSTS =['.reuplan.lol','.reuplan.up.railway.app',"127.0.0.1"]
 
 
 
