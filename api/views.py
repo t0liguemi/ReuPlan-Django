@@ -540,7 +540,6 @@ class RecoveryAttempt(APIView):
         return Response({'error':'Algo salió mal!'},status=status.HTTP_400_BAD_REQUEST)
     
 @throttle_classes([AnonRateThrottle])
-@csrf_exempt
 @permission_classes([AllowAny])
 @api_view(["POST"])
 def Contact(request):

@@ -40,8 +40,6 @@ DEBUG = False
 
 ALLOWED_HOSTS =['.reuplan.lol','.reuplan.up.railway.app',"127.0.0.1"]
 
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -56,7 +54,6 @@ INSTALLED_APPS = [
     'coreapi',
     'corsheaders',
     'api',
-    
 ]
 
 AUTH_USER_MODEL = 'api.User'
