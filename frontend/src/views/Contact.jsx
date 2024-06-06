@@ -6,6 +6,15 @@ function Contact() {
     ? import.meta.env.VITE_APP_BACKEND_URL
     : "";
 
+    function getCsrfToken() {
+      return document
+        .querySelector('meta[name="csrf-token"]')
+        .getAttribute("content");
+    }
+    
+    const csrfToken = getCsrfToken();
+
+
   function handleSubmit(event) {
     event.preventDefault();
     fetch(backendURL + "api/contact", {
