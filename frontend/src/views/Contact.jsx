@@ -7,11 +7,11 @@ function Contact() {
     : "";
 
   function handleSubmit(event) {
+    event.preventDefault();
     fetch(backendURL + "api/contact", {
       credentials:"include",
       method: "POST",
       headers: {
-        "X-CSRFToken": localStorage.getItem("reuPlanToken"),
         "Content-type": "application/json",
       },
       body: JSON.stringify({
@@ -23,7 +23,7 @@ function Contact() {
       if (response.status === 200) {
         toast.success("Mensaje enviado con éxito");
         navigate("/")
-      }
+      } else {toast.error("No se ha podido enviar el mensaje")}
     });
   }
   return (
