@@ -18,7 +18,7 @@ urlpatterns = [
     path('invite/delete', DeleteInvite), #CSRF protected
     path('invite/toggle',ToggleInviteQuality),#CSRF protected
     path('schedule', Schedule.as_view()), #CSRF protected
-    path('schedule/<int:schedule_id>/delete', DeleteSchedule), #CSRF protected
+    path('schedule/delete', DeleteSchedule), #CSRF protected
     path('rejection', Rejection.as_view()), #CSRF protected
     path('login', Login), #CSRF protected
     path('logout',LogoutView.as_view()), #CSRF protected
