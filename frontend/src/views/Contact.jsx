@@ -11,6 +11,7 @@ function Contact() {
       credentials:"include",
       method: "POST",
       headers: {
+        "X-CSRFToken": localStorage.getItem("reuPlanToken"),
         "Content-type": "application/json",
       },
       body: JSON.stringify({

@@ -541,6 +541,7 @@ class RecoveryAttempt(APIView):
     
 @throttle_classes([AnonRateThrottle])
 @csrf_exempt
+@permission_classes([AllowAny])
 @api_view(["POST"])
 def Contact(request):
     name=request.data.get('name')

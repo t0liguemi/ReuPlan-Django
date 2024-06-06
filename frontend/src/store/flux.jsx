@@ -1143,6 +1143,7 @@ const getState = ({ getStore, getActions, setStore }) => {
           credentials: "include",
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
+            "Content-type": "application/json",
             "X-CSRFToken": csrfToken,
           },
           body: JSON.stringify({
