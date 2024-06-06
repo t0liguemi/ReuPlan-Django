@@ -27,7 +27,7 @@ urlpatterns = [
     path('recovery/username', EmailUsername.as_view()), #CSRF Exempt
     path('recovery/key/attempt', RecoveryAttempt.as_view()), #CSRF Exempt
     path('recovery/password', PasswordRecovery.as_view()), #CSRF Exempt
-    path('contact', Contact), #CSRF Exempt
+    path('contact', Contact.as_view()), #CSRF Exempt   
     path('csrf',get_csrf_token),
     # path('deletedeletedelete/delete/<str:username>',delete_account)
 ]
