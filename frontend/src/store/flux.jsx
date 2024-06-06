@@ -1138,13 +1138,16 @@ const getState = ({ getStore, getActions, setStore }) => {
       },
       deleteAvailability: (id, navigate) => {
         const actions = getActions();
-        fetch(backendURL + "api/schedule/" + id + "/delete", {
+        fetch(backendURL + "api/schedule/delete", {
           method: "DELETE",
           credentials: "include",
           headers: {
             Authorization: "Token " + localStorage.getItem("reuPlanToken"),
             "X-CSRFToken": csrfToken,
           },
+          body: JSON.stringify({
+            schedule_id: id,
+          }),
         })
           .then((resp) => {
             if (resp.status === 429) {
