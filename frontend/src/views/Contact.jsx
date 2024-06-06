@@ -9,10 +9,11 @@ function Contact() {
   function handleSubmit(event) {
     event.preventDefault();
     fetch(backendURL + "api/contact", {
-      credentials:"include",
       method: "POST",
+      credentials: "include",
       headers: {
         "Content-type": "application/json",
+        "X-CSRFToken": csrfToken,
       },
       body: JSON.stringify({
         email: event.target.email.value,

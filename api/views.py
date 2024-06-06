@@ -543,9 +543,6 @@ class RecoveryAttempt(APIView):
 @throttle_classes([AnonRateThrottle])
 class Contact(APIView):
     permission_classes = [AllowAny]
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
     def post (self,request):
         name=request.data.get('name')
         contacted_email=request.data.get('email')
