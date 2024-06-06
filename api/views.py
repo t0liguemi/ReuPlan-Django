@@ -539,19 +539,22 @@ class RecoveryAttempt(APIView):
             return Response({'message':'Clave aceptada!'},status=status.HTTP_200_OK) #lead to frontend view to change password
         return Response({'error':'Algo salió mal!'},status=status.HTTP_400_BAD_REQUEST)
     
+
 @throttle_classes([AnonRateThrottle])
-@permission_classes([AllowAny])
-@csrf_exempt()
-@api_view(["POST"])
-def Contact(request):
-    name=request.data.get('name')
-    contacted_email=request.data.get('email')
-    message=request.data.get('message')+"\n\n"+"Enviado por: "+str(contacted_email)+"\n\n"+str(name)
-    subject="REUPLAN CONTACTO"
-    email="merengueconjamon@gmail.com"
-    recipient_list = [email]
-    send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
-    return Response({'message':'Email sent succesfully'},status=status.HTTP_200_OK)
+class Contact(APIView):
+    permission_classes = [AllowAny]
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    def post (self,request):
+        name=request.data.get('name')
+        contacted_email=request.data.get('email')
+        message=request.data.get('message')+"\n\n"+"Enviado por: "+str(contacted_email)+"\n\n"+str(name)
+        subject="REUPLAN CONTACTO"
+        email="merengueconjamon@gmail.com"
+        recipient_list = [email]
+        send_mail(subject,message,EMAIL_HOST_USER,recipient_list,fail_silently=True)
+        return Response({'message':'Email sent succesfully'},status=status.HTTP_200_OK)
 
 @throttle_classes([AnonRateThrottle])
 class EmailUsername(APIView):
