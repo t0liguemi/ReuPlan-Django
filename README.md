@@ -1,9 +1,19 @@
 # ReuPlan-Django
 
-Testing porting my project REUPLAN to Django for practice and deployment
+Testing REUPLAN on Django for practice and deployment in Railway
+Currently being ported to Next.js
 
-https://www.reuplan.lol
+#
+#
 
-Necessary environment variables:
+### Current working version!
+#### Check it in https://www.reuplan.lol
+
+#
+#
+### Necessary environment variables:
 DATABASE_URL (Backend url)
 VITE_APP_API_KEY (Google maps api key)
+
+### Original Design
+https://www.figma.com/design/fwfUrkAjxpyQSwnxeKqdPz/ReuPlan?node-id=0-1&t=hJhuVPGLUoUo059E-1
